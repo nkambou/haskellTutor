@@ -1,0 +1,964 @@
+{
+  "cours": "De Haskell à la programmation fonctionnelle",
+  "version_referentiel": "0.3",
+  "note": "Fichier lu par le générateur. Un enseignant qui change de progression ne modifie que ce fichier.",
+  "reglages": {
+    "instances_min": 3,
+    "instances_max": 6,
+    "guidage_apres_echec": true,
+    "seuil_correction_pour_alignement": 1.0,
+    "reemploi_requis": 2,
+    "composition_equipe": "homogene_sur_concept"
+  },
+  "paliers": [
+    {
+      "id": "P0",
+      "titre": "Expressions, valeurs, types",
+      "concepts": [
+        {
+          "id": "type-statique",
+          "libelle": "Le compilateur connaît le type avant l'exécution",
+          "prerequis": [],
+          "famille": null,
+          "generalisation": null,
+          "acquisition": "lecture_erreur",
+          "reuse": "diagnostiquer trois erreurs de types sans compiler"
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "titre": "Listes et filtrage par patterns",
+      "concepts": [
+        {
+          "id": "liste-recursive",
+          "libelle": "Une liste est une structure récursive, pas un tableau",
+          "prerequis": [
+            "type-statique"
+          ],
+          "famille": "patterns",
+          "generalisation": null,
+          "acquisition": "instances",
+          "reuse": "écrire un motif à deux niveaux (x:y:reste)"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "titre": "Récursion structurelle",
+      "concepts": [
+        {
+          "id": "recursion-structurelle",
+          "libelle": "Cas de base, cas récursif, décroissance sur la structure",
+          "prerequis": [
+            "liste-recursive"
+          ],
+          "famille": "bare-recursion",
+          "generalisation": null,
+          "acquisition": "instances",
+          "reuse": "écrire une récursion sur une liste non vue en cours"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "titre": "Les trois schémas",
+      "concepts": [
+        {
+          "id": "transformation",
+          "libelle": "Transformer chaque élément",
+          "prerequis": [
+            "recursion-structurelle"
+          ],
+          "famille": "F-map",
+          "generalisation": {
+            "nom_cache": "map",
+            "signature": "(a -> b) -> [a] -> [b]",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "cas de base identique",
+              "constructeur : conservé"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "employer le schéma sans y être invité"
+        },
+        {
+          "id": "selection",
+          "libelle": "Garder ou écarter selon une condition",
+          "prerequis": [
+            "recursion-structurelle"
+          ],
+          "famille": "F-filter",
+          "generalisation": {
+            "nom_cache": "filter",
+            "signature": "(a -> Bool) -> [a] -> [a]",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "cas de base identique",
+              "structure conditionnelle conservée"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "employer le schéma sans y être invité"
+        },
+        {
+          "id": "pli-droit",
+          "libelle": "Réduire une liste à une valeur",
+          "prerequis": [
+            "transformation",
+            "selection"
+          ],
+          "famille": "F-fold",
+          "generalisation": {
+            "nom_cache": "foldr",
+            "signature": "(a -> b -> b) -> b -> [a] -> b",
+            "points_de_variation_attendus": 3,
+            "invariants": [
+              "appel récursif en position d'argument droit"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "redéfinir map ou filter à l'aide du pli"
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "titre": "Ordre supérieur",
+      "concepts": [
+        {
+          "id": "application-partielle",
+          "libelle": "Une fonction à deux arguments en est une à un argument",
+          "prerequis": [
+            "pli-droit"
+          ],
+          "famille": "F-partial",
+          "generalisation": {
+            "nom_cache": "curryfication",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "argument final absent des deux côtés"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "supprimer un argument nommé dans trois définitions existantes"
+        },
+        {
+          "id": "composition",
+          "libelle": "Enchaîner deux fonctions sans nommer la valeur intermédiaire",
+          "prerequis": [
+            "application-partielle"
+          ],
+          "famille": "F-compose",
+          "generalisation": {
+            "nom_cache": ".",
+            "signature": "(b -> c) -> (a -> b) -> a -> c",
+            "points_de_variation_attendus": 2,
+            "invariants": [
+              "variable intermédiaire liée une seule fois"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "réécrire un pipeline de trois étapes"
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "titre": "Types définis par l'utilisateur",
+      "concepts": [
+        {
+          "id": "type-somme",
+          "libelle": "Un type est une somme de constructeurs",
+          "prerequis": [
+            "recursion-structurelle"
+          ],
+          "famille": "F-sum-type",
+          "generalisation": null,
+          "acquisition": "instances",
+          "reuse": "modéliser un domaine en trois constructeurs"
+        },
+        {
+          "id": "recursion-arbre",
+          "libelle": "La récursion suit la forme du type, pas celle de la liste",
+          "prerequis": [
+            "type-somme",
+            "pli-droit"
+          ],
+          "famille": "F-tree",
+          "generalisation": {
+            "nom_cache": "pli sur un arbre",
+            "points_de_variation_attendus": 2,
+            "invariants": [
+              "un argument par constructeur, et par champ",
+              "les champs recursifs deviennent des resultats"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "écrire le pli d'un type défini par l'apprenant lui-même"
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "titre": "Classes de types",
+      "concepts": [
+        {
+          "id": "classe-de-types",
+          "libelle": "Une même opération sur des types différents",
+          "prerequis": [
+            "recursion-arbre"
+          ],
+          "famille": "F-instances",
+          "generalisation": {
+            "nom_cache": "class / instance",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "même nom d'opération, types différents"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "rendre un type personnel utilisable par une fonction générique"
+        },
+        {
+          "id": "foncteur",
+          "libelle": "map se généralise au-delà des listes",
+          "prerequis": [
+            "classe-de-types",
+            "transformation"
+          ],
+          "famille": "F-fmap",
+          "generalisation": {
+            "nom_cache": "fmap",
+            "signature": "(a -> b) -> f a -> f b",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "structure préservée"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "écrire fmap pour un type personnel"
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "titre": "Échec, choix, effets",
+      "concepts": [
+        {
+          "id": "echec-explicite",
+          "libelle": "Une fonction qui peut échouer le dit dans son type",
+          "prerequis": [
+            "type-somme"
+          ],
+          "famille": "F-failure",
+          "generalisation": {
+            "nom_cache": "Maybe",
+            "points_de_variation_attendus": 1,
+            "invariants": [
+              "deux constructeurs, un porteur, un vide"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "remplacer une fonction partielle du prélude"
+        },
+        {
+          "id": "enchainement-echec",
+          "libelle": "Enchaîner des calculs qui peuvent échouer",
+          "prerequis": [
+            "echec-explicite",
+            "composition"
+          ],
+          "famille": "F-chain",
+          "generalisation": {
+            "nom_cache": ">>=",
+            "points_de_variation_attendus": 2,
+            "invariants": [
+              "propagation de l'échec sans test explicite"
+            ]
+          },
+          "acquisition": "instances_puis_remontee",
+          "reuse": "supprimer trois filtrages imbriqués"
+        },
+        {
+          "id": "effets",
+          "libelle": "Ce qui sort du programme est marqué dans le type",
+          "prerequis": [
+            "enchainement-echec"
+          ],
+          "famille": "F-io",
+          "generalisation": null,
+          "acquisition": "instances",
+          "reuse": "séparer le calcul pur de l'entrée-sortie dans un programme"
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "titre": "Évaluation paresseuse",
+      "concepts": [
+        {
+          "id": "paresse",
+          "libelle": "Ce qui n'est pas demandé n'est pas calculé",
+          "prerequis": [
+            "pli-droit"
+          ],
+          "famille": "F-lazy",
+          "generalisation": null,
+          "acquisition": "instances",
+          "reuse": "expliquer un programme qui termine sur une liste infinie"
+        },
+        {
+          "id": "pli-gauche",
+          "libelle": "Deux plis, deux comportements en mémoire",
+          "prerequis": [
+            "paresse",
+            "pli-droit"
+          ],
+          "famille": "F-foldl",
+          "generalisation": {
+            "nom_cache": "foldl'",
+            "points_de_variation_attendus": 2,
+            "invariants": [
+              "appel récursif en position de tête"
+            ]
+          },
+          "acquisition": "confrontation",
+          "reuse": "choisir le bon pli et justifier"
+        }
+      ]
+    }
+  ],
+  "familles": {
+    "F-map": {
+      "concept": "transformation",
+      "regle": "écart de surface maximal, écart de structure nul",
+      "axes_de_variation_autorises": [
+        "type des éléments",
+        "opération appliquée",
+        "vocabulaire de l'énoncé"
+      ],
+      "axes_interdits": [
+        "forme de la récursion",
+        "présence d'une condition"
+      ],
+      "ancrages": [
+        {
+          "type": "[Int] -> [Int]",
+          "operation": "arithmétique unaire"
+        },
+        {
+          "type": "[String] -> [Char]",
+          "operation": "extraction"
+        },
+        {
+          "type": "[(String,Int)] -> [Int]",
+          "operation": "projection"
+        },
+        {
+          "type": "[Char] -> [Char]",
+          "operation": "conversion"
+        }
+      ],
+      "solution_de_reference": "f [] = [] ; f (x:xs) = OP x : f xs",
+      "chapitre": 4,
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 1
+      }
+    },
+    "F-filter": {
+      "concept": "selection",
+      "regle": "écart de surface maximal, écart de structure nul",
+      "axes_de_variation_autorises": [
+        "type des éléments",
+        "prédicat",
+        "vocabulaire de l'énoncé"
+      ],
+      "axes_interdits": [
+        "transformation de l'élément conservé"
+      ],
+      "ancrages": [
+        {
+          "type": "[Int] -> [Int]",
+          "predicat": "arithmétique"
+        },
+        {
+          "type": "[String] -> [String]",
+          "predicat": "sur la chaîne"
+        },
+        {
+          "type": "[(String,Int)] -> [(String,Int)]",
+          "predicat": "sur une composante"
+        }
+      ],
+      "solution_de_reference": "f [] = [] ; f (x:xs) | P x = x : f xs | otherwise = f xs",
+      "chapitre": 4,
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 1
+      }
+    },
+    "F-fold": {
+      "concept": "pli-droit",
+      "regle": "le cas de base doit varier, sinon la troisième variation reste invisible",
+      "axes_de_variation_autorises": [
+        "type du résultat",
+        "opération",
+        "élément neutre"
+      ],
+      "axes_interdits": [
+        "condition dans le cas récursif"
+      ],
+      "ancrages": [
+        {
+          "type": "[Int] -> Int",
+          "neutre": "0",
+          "operation": "+"
+        },
+        {
+          "type": "[Int] -> Int",
+          "neutre": "1",
+          "operation": "*"
+        },
+        {
+          "type": "[a] -> Int",
+          "neutre": "0",
+          "operation": "ignore l'élément"
+        },
+        {
+          "type": "[[a]] -> [a]",
+          "neutre": "[]",
+          "operation": "++"
+        }
+      ],
+      "solution_de_reference": "f [] = Z ; f (x:xs) = OP x (f xs)",
+      "obligation": "au moins un ancrage dont l'opération ignore l'élément",
+      "chapitre": 4,
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 3
+      }
+    },
+    "patterns": {
+      "concept": "liste-recursive",
+      "chapitre": 2,
+      "regle": "faire varier la forme reconnue, jamais le calcul fait ensuite",
+      "axes_de_variation_autorises": [
+        "nombre de niveaux du motif",
+        "type des elements",
+        "valeur de repli"
+      ],
+      "axes_interdits": [
+        "appel recursif",
+        "gardes"
+      ],
+      "ancrages": [
+        {
+          "motif": "[]",
+          "exemple": "estVide"
+        },
+        {
+          "motif": "(x:_)",
+          "exemple": "premier"
+        },
+        {
+          "motif": "(_:xs)",
+          "exemple": "reste"
+        },
+        {
+          "motif": "(x:y:_)",
+          "exemple": "deuxPremiers"
+        },
+        {
+          "motif": "[x] puis (x:_)",
+          "exemple": "decrire, trois cas ordonnes"
+        }
+      ],
+      "solution_de_reference": "f PATTERN = EXPR ; une equation par forme",
+      "obligation": "au moins un ancrage a deux niveaux, sans quoi le motif compose reste invisible",
+      "validation": {
+        "mode": "none"
+      }
+    },
+    "bare-recursion": {
+      "concept": "recursion-structurelle",
+      "chapitre": 3,
+      "regle": "ecart de surface maximal, forme de la recursion identique",
+      "axes_de_variation_autorises": [
+        "type des elements",
+        "operation",
+        "valeur du cas de base",
+        "objet qui decroit"
+      ],
+      "axes_interdits": [
+        "schema tout fait (map, filter, foldr)",
+        "fonction auxiliaire a accumulateur"
+      ],
+      "ancrages": [
+        {
+          "exemple": "somme",
+          "type": "[Int] -> Int",
+          "decroit": "la liste"
+        },
+        {
+          "exemple": "produit",
+          "type": "[Int] -> Int",
+          "decroit": "la liste"
+        },
+        {
+          "exemple": "longueur",
+          "type": "[a] -> Int",
+          "decroit": "la liste"
+        },
+        {
+          "exemple": "concatener",
+          "type": "[[a]] -> [a]",
+          "decroit": "la liste"
+        },
+        {
+          "exemple": "majuscules",
+          "type": "String -> String",
+          "decroit": "la liste"
+        },
+        {
+          "exemple": "repete",
+          "type": "Int -> a -> [a]",
+          "decroit": "un entier"
+        }
+      ],
+      "solution_de_reference": "f BASE = Z ; f (x:xs) = OP x (f xs)",
+      "obligation": "au moins un ancrage ou ce n'est pas une liste qui decroit (repete)",
+      "validation": {
+        "mode": "none"
+      }
+    },
+    "F-partial": {
+      "concept": "application-partielle",
+      "chapitre": 5,
+      "regle": "le dernier argument est nomme a gauche et transmis une seule fois a droite",
+      "axes_de_variation_autorises": [
+        "schema employe",
+        "type des elements",
+        "operation"
+      ],
+      "axes_interdits": [
+        "argument employe deux fois",
+        "argument ailleurs qu'en derniere position"
+      ],
+      "ancrages": [
+        {
+          "exemple": "doublerTous",
+          "corps": "map (\\x -> 2 * x) xs"
+        },
+        {
+          "exemple": "garderPairs",
+          "corps": "filter even xs"
+        },
+        {
+          "exemple": "totaliser",
+          "corps": "foldr (+) 0 xs"
+        },
+        {
+          "exemple": "initiales",
+          "corps": "map head ns"
+        }
+      ],
+      "solution_de_reference": "f xs = G xs",
+      "obligation": "servir en reemploi un cas ou l'argument n'est pas en derniere position (div x 2), pour que la condition soit eprouvee et non seulement enoncee",
+      "validation": {
+        "mode": "invariant",
+        "invariant": "le dernier argument apparait une seule fois, en derniere position",
+        "note": "l'alignement n'est pas le critere ici : ce qui reste apres suppression differe d'un ancrage a l'autre par construction. C'est la condition de l'eta-reduction qui doit tenir sur les quatre."
+      }
+    },
+    "F-compose": {
+      "concept": "composition",
+      "chapitre": 5,
+      "regle": "deux fonctions enchainees, aucune valeur intermediaire employee deux fois",
+      "axes_de_variation_autorises": [
+        "fonctions enchainees",
+        "type d'entree",
+        "type de sortie"
+      ],
+      "axes_interdits": [
+        "valeur intermediaire employee deux fois",
+        "plus de deux fonctions au premier ancrage"
+      ],
+      "ancrages": [
+        {
+          "exemple": "nbMots",
+          "corps": "length (words s)"
+        },
+        {
+          "exemple": "majInitiale",
+          "corps": "toUpper (head s)"
+        },
+        {
+          "exemple": "sommeDesLongueurs",
+          "corps": "sum (map length xss)"
+        },
+        {
+          "exemple": "nonVide",
+          "corps": "not (null s)"
+        }
+      ],
+      "solution_de_reference": "f x = G (H x)",
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 2
+      }
+    },
+    "F-sum-type": {
+      "concept": "type-somme",
+      "chapitre": 6,
+      "regle": "une equation par constructeur ; le nombre de champs varie d'un constructeur a l'autre",
+      "axes_de_variation_autorises": [
+        "domaine modelise",
+        "nombre de constructeurs",
+        "nombre de champs"
+      ],
+      "axes_interdits": [
+        "constructeur unique",
+        "encodage par chaine dans l'enonce"
+      ],
+      "ancrages": [
+        {
+          "exemple": "Forme",
+          "constructors": 3,
+          "champs": "1, 2 et 3"
+        },
+        {
+          "exemple": "Jour",
+          "constructors": 7,
+          "champs": "aucun"
+        },
+        {
+          "exemple": "Reponse",
+          "constructors": 3,
+          "champs": "1, 0 et 1 de types differents"
+        },
+        {
+          "exemple": "Categorie",
+          "constructors": 5,
+          "champs": "aucun"
+        }
+      ],
+      "solution_de_reference": "data T = A ... | B ... ; f (A ...) = ... ; f (B ...) = ...",
+      "obligation": "au moins un ancrage a constructeurs sans champ, pour que le type enumere soit rencontre",
+      "validation": {
+        "mode": "none"
+      }
+    },
+    "F-tree": {
+      "concept": "recursion-arbre",
+      "chapitre": 6,
+      "regle": "meme type recursif, operations differentes ; le cas de base doit varier",
+      "axes_de_variation_autorises": [
+        "operation de combinaison",
+        "valeur du cas Feuille",
+        "type du resultat"
+      ],
+      "axes_interdits": [
+        "parcours non structurel",
+        "modification de la forme de l'arbre"
+      ],
+      "ancrages": [
+        {
+          "exemple": "sommeA",
+          "base": "0",
+          "pas": "g + x + d"
+        },
+        {
+          "exemple": "tailleA",
+          "base": "0",
+          "pas": "g + 1 + d"
+        },
+        {
+          "exemple": "listerA",
+          "base": "[]",
+          "pas": "g ++ [x] ++ d"
+        },
+        {
+          "exemple": "hauteurA",
+          "base": "0",
+          "pas": "1 + max g d"
+        }
+      ],
+      "solution_de_reference": "f Feuille = Z ; f (Noeud g x d) = OP (f g) x (f d)",
+      "obligation": "au moins un ancrage dont l'operation ne combine pas les deux appels par la meme structure (hauteurA) ; sans lui la generalisation obtenue est trop etroite",
+      "validation": {
+        "mode": "corps",
+        "granularite": "blocs",
+        "attendu": 2,
+        "note": "l'anti-unification fine rend 4 points ; le chapitre 6 en annonce 2, qui est la lecture par blocs (cas de base, cas recursif). Validation par blocs."
+      }
+    },
+    "F-instances": {
+      "concept": "classe-de-types",
+      "chapitre": 7,
+      "regle": "la meme operation sur des types differents ; seules les signatures s'alignent, pas les corps",
+      "axes_de_variation_autorises": [
+        "type de l'argument",
+        "forme du resultat produit"
+      ],
+      "axes_interdits": [
+        "type de resultat different d'un ancrage a l'autre",
+        "operation qui n'a pas le meme sens d'un type a l'autre"
+      ],
+      "ancrages": [
+        {
+          "exemple": "montrerForme",
+          "type": "Forme -> String"
+        },
+        {
+          "exemple": "montrerJour",
+          "type": "Jour -> String"
+        },
+        {
+          "exemple": "montrerReponse",
+          "type": "Reponse -> String"
+        },
+        {
+          "exemple": "montrerBoite",
+          "type": "Show a => Boite a -> String"
+        }
+      ],
+      "solution_de_reference": "montrerT :: T -> String",
+      "obligation": "au moins un ancrage sur un type parametre, pour faire apparaitre la contrainte d'instance",
+      "validation": {
+        "mode": "signatures",
+        "granularite": "fins",
+        "attendu": 1
+      }
+    },
+    "F-fmap": {
+      "concept": "foncteur",
+      "chapitre": 7,
+      "regle": "quatre signatures ou l'enveloppe est la meme a gauche et a droite de la fleche",
+      "axes_de_variation_autorises": [
+        "enveloppe",
+        "nombre de champs a transformer"
+      ],
+      "axes_interdits": [
+        "enveloppe qui change entre l'entree et la sortie",
+        "type non parametre"
+      ],
+      "ancrages": [
+        {
+          "exemple": "map",
+          "type": "(a -> b) -> [a] -> [b]"
+        },
+        {
+          "exemple": "mapArbre",
+          "type": "(a -> b) -> Arbre a -> Arbre b"
+        },
+        {
+          "exemple": "mapBoite",
+          "type": "(a -> b) -> Boite a -> Boite b"
+        },
+        {
+          "exemple": "mapPaire",
+          "type": "(a -> b) -> Paire a -> Paire b"
+        }
+      ],
+      "solution_de_reference": "mapT :: (a -> b) -> T a -> T b",
+      "obligation": "servir en reemploi une instance fautive (Paire qui echange ses champs), pour eprouver les deux regles qu'aucun compilateur ne verifie",
+      "validation": {
+        "mode": "signatures",
+        "granularite": "fins",
+        "attendu": 1
+      }
+    },
+    "F-failure": {
+      "concept": "echec-explicite",
+      "chapitre": 8,
+      "regle": "des fonctions sans reponse sur une partie de leur domaine",
+      "axes_de_variation_autorises": [
+        "cause de l'absence",
+        "type du resultat"
+      ],
+      "axes_interdits": [
+        "valeur de repli inventee",
+        "error",
+        "exception"
+      ],
+      "ancrages": [
+        {
+          "exemple": "premierS",
+          "absence": "liste vide"
+        },
+        {
+          "exemple": "maximumS",
+          "absence": "liste vide"
+        },
+        {
+          "exemple": "moyenneS",
+          "absence": "liste vide"
+        },
+        {
+          "exemple": "divisionS",
+          "absence": "diviseur nul"
+        }
+      ],
+      "solution_de_reference": "f ... = Nothing | Just ...",
+      "obligation": "reprendre comme ancrages les trois fonctions malhonnetes des chapitres 2, 3 et 6, pour que la remontee solde des dettes reelles de l'apprenant",
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 1
+      }
+    },
+    "F-chain": {
+      "concept": "enchainement-echec",
+      "chapitre": 8,
+      "regle": "plusieurs calculs faillibles a la suite, ecrits en case imbriques",
+      "axes_de_variation_autorises": [
+        "nombre d'etapes",
+        "type intermediaire"
+      ],
+      "axes_interdits": [
+        "une seule etape",
+        "etapes independantes plutot qu'enchainees"
+      ],
+      "ancrages": [
+        {
+          "exemple": "bureau",
+          "etapes": 3
+        },
+        {
+          "exemple": "bureauCourt",
+          "etapes": 2
+        },
+        {
+          "exemple": "initialeDuService",
+          "etapes": 2
+        }
+      ],
+      "solution_de_reference": "f x = case E1 of { Nothing -> Nothing ; Just v -> ... }",
+      "obligation": "au moins un ancrage a trois etapes : a deux niveaux, la branche Nothing -> Nothing ne se percoit pas encore comme du bruit",
+      "validation": {
+        "mode": "corps",
+        "granularite": "fins",
+        "attendu": 2
+      }
+    },
+    "F-io": {
+      "concept": "effets",
+      "chapitre": 8,
+      "regle": "un calcul pur enveloppe d'une lecture et d'une ecriture",
+      "axes_de_variation_autorises": [
+        "source d'entree",
+        "forme de la sortie",
+        "nature du calcul"
+      ],
+      "axes_interdits": [
+        "calcul ecrit dans main",
+        "valeur extraite d'une action hors d'un bloc do"
+      ],
+      "ancrages": [
+        {
+          "exemple": "lire une ligne, repondre"
+        },
+        {
+          "exemple": "lire l'entree entiere, resumer"
+        },
+        {
+          "exemple": "lire des noms, produire un rapport"
+        }
+      ],
+      "solution_de_reference": "main = do { e <- LIRE ; ECRIRE (PUR e) }",
+      "obligation": "le coeur pur doit etre appelable depuis GHCi sans entree-sortie ; l'activite le verifie",
+      "validation": {
+        "mode": "none"
+      }
+    },
+    "F-lazy": {
+      "concept": "paresse",
+      "chapitre": 9,
+      "regle": "des expressions dont une partie n'est jamais evaluee",
+      "axes_de_variation_autorises": [
+        "source de l'infini",
+        "endroit ou le calcul s'arrete"
+      ],
+      "axes_interdits": [
+        "liste finie seulement",
+        "resultat qui exige le parcours complet"
+      ],
+      "ancrages": [
+        {
+          "exemple": "take n [1..]"
+        },
+        {
+          "exemple": "ignore undefined"
+        },
+        {
+          "exemple": "toutVrai (False : repeat True)"
+        },
+        {
+          "exemple": "fibs, definition circulaire"
+        }
+      ],
+      "solution_de_reference": "expression dont l'evaluation s'arrete au premier constructeur",
+      "obligation": "au moins un ancrage a definition circulaire (fibs) : c'est le seul qui montre ce que la paresse permet et non seulement ce qu'elle evite",
+      "validation": {
+        "mode": "none"
+      }
+    },
+    "F-foldl": {
+      "concept": "pli-gauche",
+      "chapitre": 9,
+      "regle": "confrontation de deux definitions correctes du meme calcul, pas une factorisation",
+      "axes_de_variation_autorises": [
+        "place de l'appel recursif",
+        "taille de l'entree"
+      ],
+      "axes_interdits": [
+        "definitions qui ne calculent pas la meme chose"
+      ],
+      "ancrages": [
+        {
+          "exemple": "somme par recursion directe",
+          "appel": "argument de l'operation"
+        },
+        {
+          "exemple": "somme par accumulateur",
+          "appel": "entoure tout"
+        },
+        {
+          "exemple": "mesure sur 10^6 et 10^7 elements",
+          "appel": "—"
+        }
+      ],
+      "solution_de_reference": "deux definitions a comparer, aucune generalisation a produire",
+      "obligation": "l'ancrage de mesure est obligatoire : la difference ne se voit pas sans +RTS -s",
+      "validation": {
+        "mode": "confrontation",
+        "note": "confrontation : deux definitions a comparer, aucune generalisation a produire."
+      }
+    }
+  },
+  "groupes": {
+    "formation": "auto_avec_accord",
+    "formation_valeurs": [
+      "enseignant",
+      "auto",
+      "auto_avec_accord"
+    ],
+    "autorise_par": "administrateur",
+    "taille_min": 2,
+    "taille_max": 4,
+    "eligibilite": "meme_etat_sur_le_concept_vise",
+    "fenetre_auto_organisation_heures": 48,
+    "attribution_office_apres_fenetre": true,
+    "recomposition": "a_chaque_palier",
+    "visibilite_des_non_apparies": "enseignant_seulement",
+    "solo_autorise": true,
+    "note": "L'auto-organisation ne s'exerce que dans l'ensemble eligible : seuls les pairs au meme etat sur le concept vise sont proposes."
+  }
+}

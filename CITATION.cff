@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: HaskellTutor
+message: If you use this software, please cite the accompanying paper.
+authors:
+  - family-names: Nkambou
+    given-names: Roger
+  - family-names: Tato
+    given-names: Ange
+license: MIT
+preferred-citation:
+  type: article
+  title: "HaskellTutor: Mechanizing Abstraction from Learner Solutions in a Configurable Functional Programming Tutor"
+  authors:
+    - family-names: Nkambou
+      given-names: Roger
+    - family-names: Tato
+      given-names: Ange
+  journal: Frontiers in Artificial Intelligence
+  year: 2026

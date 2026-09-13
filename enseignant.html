@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>HaskellTutor4Teacher — console</title>
+<style>
+  body{font-family:"DejaVu Sans",Arial,sans-serif;font-size:13px;margin:0;padding:14px;
+       background:#f6f8fa;color:#1a1a1a}
+  .bandeau{background:#16283c;color:#fff;padding:9px 12px;border-radius:5px;font-size:14px;
+           margin-bottom:12px;overflow:hidden}
+  .bandeau span{float:right;font-size:12px;opacity:.9}
+  .onglets{margin-bottom:11px}
+  .onglets a{display:inline-block;padding:5px 12px;font-size:12px;border-radius:4px;
+             background:#e3e9ef;color:#8fa3b8;margin-right:6px;cursor:pointer}
+  .onglets a.actif{background:#16283c;color:#fff}
+  .rangee{display:flex;align-items:flex-start;gap:12px}
+  .c{flex:1 1 auto}.d{flex:0 0 34%}
+  .carte{background:#fff;border:1px solid #c3cdd8;border-radius:5px;margin-bottom:11px}
+  .titre{background:#16283c;color:#fff;padding:5px 10px;font-size:12px;border-radius:4px 4px 0 0;
+         overflow:hidden}
+  .titre b{float:right;font-weight:normal;opacity:.92}
+  .titre.gr{background:#8fa3b8}.titre.ve{background:#3f5d7d}.titre.or{background:#3f5d7d}
+  .corps{padding:9px 10px}
+  table.t{width:100%;border-collapse:collapse;font-size:11.5px}
+  table.t th{text-align:left;color:#5c6b7a;font-weight:normal;border-bottom:1px solid #c3cdd8;
+             padding:3px 5px;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  table.t td{padding:4px 5px;border-bottom:1px solid #eef2f6;vertical-align:top}
+  td.m,code,pre{font-family:"DejaVu Sans Mono",monospace;font-size:11px}
+  pre{margin:0;white-space:pre-wrap}
+  select,input{font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid #c3cdd8;
+               border-radius:3px;background:#fff}
+  .ok{color:#3f5d7d;font-weight:bold}.ko{color:#3f5d7d;font-weight:bold}
+  .note{font-size:11px;color:#5c6b7a;line-height:1.45;margin-top:7px}
+  .alerte{border-left:3px solid #3f5d7d;padding-left:8px;color:#16283c}
+  button{background:#16283c;color:#fff;border:0;padding:5px 10px;border-radius:4px;font-size:11px;
+         cursor:pointer;margin-right:4px}
+  button.sec{background:#fff;color:#16283c;border:1px solid #16283c}
+</style>
+</head>
+<body>
+
+<div class="bandeau">HaskellTutor4Teacher — console enseignante <span id="ent">chargement…</span></div>
+
+<div class="onglets" id="onglets"></div>
+<div id="vue"></div>
+
+<script>
+const ONGLETS = [["familles","Familles et validation"],["contrats","Contrats"],
+  
+                 ["groupes","Groupes"],["cohorte","Cohorte"],["activites","Activités"],
+                 ["reglages","Réglages"],["releves","Relevés"],["journal","Journal"]];
+let courant = "familles", D = {};
+
+const VERSION_ATTENDUE = "3.8";
+
+function alerteServeur(msg) {
+  let z = document.getElementById("alerteServeur");
+  if (!z) {
+    z = document.createElement("div");
+    z.id = "alerteServeur";
+    z.style.cssText = "background:#e3e9ef;border:1px solid #8fa3b8;color:#16283c;" +
+      "padding:9px 12px;border-radius:5px;margin-bottom:12px;font-size:12.5px";
+    document.body.insertBefore(z, document.body.firstChild);
+  }
+  z.innerHTML = msg;
+}
+
+async function verifierServeur() {
+  try {
+    const v = await (await fetch("/api/version")).json();
+    if (v.version !== VERSION_ATTENDUE)
+      alerteServeur("<b>Serveur en version " + v.version + ", page en version " +
+        VERSION_ATTENDUE + ".</b> Arrêtez le serveur et relancez-le depuis le dossier " +
+        "où vous avez copié les nouveaux fichiers.");
+  } catch (e) {
+    alerteServeur("<b>Le serveur ne répond pas à /api/version.</b> Il s'agit " +
+      "probablement d'un ancien processus encore en écoute sur ce port. " +
+      "Arrêtez-le (<code>pkill -f serveur.py</code>) puis relancez " +
+      "<code>python3 serveur.py</code>.");
+  }
+}
+
+async function api(route, corps) {
+  const opt = corps ? {method:"POST", headers:{"Content-Type":"application/json"},
+                       body: JSON.stringify(corps)} : {};
+  let d;
+  try {
+    d = await (await fetch(route, opt)).json();
+  } catch (e) {
+    alerteServeur("<b>Le serveur n'a pas répondu</b> à " + route + ".");
+    throw e;
+  }
+  if (d && d.erreur) {
+    alerteServeur("<b>" + d.erreur + "</b> — la page attend une version plus récente " +
+      "du serveur. Arrêtez le processus en cours et relancez <code>python3 serveur.py</code> " +
+      "depuis le dossier contenant les nouveaux fichiers.");
+  }
+  return d;
+}
+
+async function get(r){ return await api(r); }
+async function post(r, c){ return await api(r, c); }
+function el(id){ return document.getElementById(id); }
+
+function onglets() {
+  el("onglets").innerHTML = ONGLETS.map(([k, t]) =>
+    '<a class="' + (k === courant ? "actif" : "") + '" onclick="aller(\'' + k + '\')">' +
+    t + '</a>').join("");
+}
+async function aller(k){ courant = k; onglets(); await VUES[k](); }
+
+// ------------------------------------------------------------------ familles
+
+async function vueFamilles() {
+  const d = await get("/api/familles");
+  el("ent").textContent = d.groupes.formation + " · groupes de " + d.groupes.taille_min +
+    " à " + d.groupes.taille_max;
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre">Familles d\'activités <b>' + d.familles.length +
+   '</b></div><div class="corps"><table class="t"><tr><th>famille</th><th>ch.</th>' +
+   '<th>ancrages</th><th>mode</th><th>obtenu</th><th>attendu</th><th>verdict</th>' +
+   '<th>obligation</th></tr>' +
+   d.familles.map(f => '<tr><td>' + f.famille + '</td><td>' + (f.chapitre || "—") +
+     '</td><td>' + f.ancrages + '</td><td>' + f.mode +
+     '</td><td class="m">' + (f.obtenu !== undefined ? f.obtenu : "—") +
+     '</td><td class="m">' + (f.attendu !== undefined ? f.attendu : "—") +
+     '</td><td class="' + (f.verdict.indexOf("NOT") >= 0 ? "ko" : "ok") + '">' + f.verdict +
+     '</td><td class="note">' + (f.obligation || "") + '</td></tr>').join("") +
+   '</table><div class="note">Le contrôle aligne les solutions de référence de chaque famille ' +
+   'et compare le résultat à ce que le référentiel annonce. Une famille non conforme n\'est ' +
+   'pas servie : elle produirait un plateau.</div></div></div>';
+}
+
+// ------------------------------------------------------------------ contrats
+
+async function vueContrats() {
+  D.con = await get("/api/contrats");
+  const c = D.con.contrats, d = D.con.defaut;
+  const sel = (id, champ, val) =>
+    '<select onchange="poser(\'' + id + '\',\'' + champ + '\',this.value)">' +
+    D.con.valeurs[champ].map(v => '<option' + (v === val ? " selected" : "") + '>' + v +
+      '</option>').join("") + '</select>';
+  const fermes = D.con.concepts.filter(x => (c[x.id] || d).assistance === "none");
+  const exposes = D.con.concepts.filter(x => x.abstraction && (c[x.id] || d).abstraction === "exposed");
+  const imposes = D.con.concepts.filter(x => (c[x.id] || d).regime !== "free");
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre or">Contrats pédagogiques <b>' +
+   Object.keys(c).length + ' réglés sur ' + D.con.concepts.length + '</b></div><div class="corps">' +
+   '<table class="t"><tr><th>concept</th><th>palier</th><th>assistance</th><th>remontée</th>' +
+   '<th>régime</th><th>séquence</th><th>délai</th><th>hors forme</th>' +
+   '<th>vérification</th><th>réglé</th></tr>' +
+   D.con.concepts.map(x => {
+     const v = Object.assign({}, d, c[x.id] || {});
+     return '<tr><td>' + x.libelle + (x.executable ? "" :
+       ' <span class="note">hors ligne</span>') + '</td><td class="m">' + x.palier +
+       '</td><td>' + sel(x.id, "assistance", v.assistance) +
+       '</td><td>' + (x.abstraction ? sel(x.id, "abstraction", v.abstraction) :
+                      '<span class="note">sans remontée</span>') +
+       '</td><td>' + sel(x.id, "regime", v.regime) +
+       '</td><td>' + sel(x.id, "sequence", v.sequence || "free") +
+       '</td><td><input type="number" min="0" style="width:52px" value="' +
+       (v.delai_minutes || 0) + '" onchange="poser(\'' + x.id +
+       '\',\'delai_minutes\',parseInt(this.value)||0)"></td>' +
+       '<td>' + sel(x.id, "off_form", v.off_form || "explain_and_continue") + '</td>' +
+       '<td>' + sel(x.id, "verification", v.verification || "on-doubt") + '</td>' +
+       '<td class="' + (c[x.id] ? "ok" : "") + '">' + (c[x.id] ? "oui" : "défaut") +
+       '</td></tr>';
+   }).join("") + '</table>' +
+   '<div class="note">L\'échelle d\'étayage compte ' + D.con.niveaux_aide + ' niveaux ; ' +
+   'aucun ne donne la solution ni ne nomme le schéma. En régime <i>guidage</i>, le tuteur ' +
+   'propose l\'étayage de lui-même après deux tentatives infructueuses.</div>' +
+   (fermes.length ? '<div class="note alerte"><b>' + fermes.length +
+     ' concept(s) sans assistance</b> : ' + fermes.map(x => x.libelle).join(", ") +
+     '.</div>' : "") +
+   (imposes.length ? '<div class="note"><b>Collaboration imposée</b> sur ' +
+     imposes.map(x => x.libelle + " (" + (c[x.id] || d).regime + ")").join(", ") +
+     '. Le choix de l\'apprenant ne s\'y appliquera pas.</div>' : "") +
+   (D.con.concepts.filter(x => (c[x.id] || d).sequence === "must-complete").length ?
+     '<div class="note"><b>Séquence à compléter</b> sur ' +
+     D.con.concepts.filter(x => (c[x.id] || d).sequence === "must-complete")
+       .map(x => x.libelle).join(", ") +
+     ' : l\'apprenant ne pourra pas quitter la séance avant d\'avoir acquis le concept. ' +
+     'À réserver aux séances encadrées.</div>' : "") +
+   (D.con.concepts.filter(x => (c[x.id] || d).delai_minutes).length ?
+     '<div class="note"><b>Délai par activité</b> : ' +
+     D.con.concepts.filter(x => (c[x.id] || d).delai_minutes)
+       .map(x => x.libelle + " (" + (c[x.id] || d).delai_minutes + " min)").join(", ") +
+     '. Une soumission hors délai est enregistrée comme telle mais compte quand même : ' +
+     'le délai informe, il ne sanctionne pas.</div>' : "") +
+   '<div class="note"><b>Vérification par explication.</b> Le tuteur demande de temps ' +
+   'à autre à l\'apprenant d\'expliquer sa propre solution, par deux questions ' +
+   'engendrées à partir du code soumis. En régime <i>si doute</i>, la demande est ' +
+   'déclenchée par des indices — soumission très rapide, aucune tentative ' +
+   'intermédiaire, aucun étayage — qui sont des indices et non des preuves. Une ' +
+   'explication qui ne correspond pas au code est signalée dans la cohorte ; la ' +
+   'solution reste enregistrée et rien n\'est retiré à l\'apprenant.</div>' +
+   '<div class="note"><b>Solution correcte mais hors forme.</b> ' +
+   '<i>expliquer_et_reecrire</i> maintient l\'exercice et demande une seconde écriture ; ' +
+   '<i>expliquer_et_poursuivre</i> passe à un autre problème de même nature avec une ' +
+   'consigne de forme ; <i>confronter</i> demande la seconde écriture comme une ' +
+   'comparaison plutôt que comme une correction. Dans les trois cas la réussite est ' +
+   'comptée et la solution conservée.</div>' +
+   (exposes.length ? '<div class="note alerte"><b>Avertissement.</b> ' + exposes.length +
+     ' concept(s) en remontée <i>exposée</i> : le concept sera présenté avant d\'avoir été ' +
+     'produit, et l\'indicateur de réemploi y perdra sa valeur diagnostique. Le réglage est ' +
+     'conservé : la console signale, elle n\'interdit pas.</div>' : "") +
+   '<div class="note"><b>Appliquer à tous les concepts :</b> ' +
+   ["assistance", "abstraction", "regime", "sequence", "off_form", "verification"].map(champ =>
+     champ + " " + '<select onchange="poserTous(\'' + champ + '\',this.value)">' +
+     '<option value="">—</option>' +
+     D.con.valeurs[champ].map(v => '<option>' + v + '</option>').join("") +
+     '</select>').join(" &nbsp; ") +
+   ' &nbsp; <button class="sec" onclick="reinitialiser()">Tout remettre au défaut</button>' +
+   '</div>' +
+   '</div></div>';
+}
+async function poserTous(champ, valeur) {
+  if (!valeur) return;
+  const c = {}; c[champ] = valeur;
+  await post("/api/contrats", {tous: true, contrat: c});
+  await vueContrats();
+}
+async function reinitialiser() {
+  for (const x of D.con.concepts)
+    await post("/api/contrats", {concept: x.id, reinitialiser: true});
+  await vueContrats();
+}
+async function poser(concept, champ, valeur) {
+  const actuel = Object.assign({}, D.con.defaut, D.con.contrats[concept] || {});
+  actuel[champ] = valeur;
+  await post("/api/contrats", {concept: concept, contrat: actuel});
+  await vueContrats();
+}
+
+// ------------------------------------------------------------------ groupes
+
+async function vueGroupes() {
+  const d = await get("/api/groupes");
+  el("vue").innerHTML =
+   '<div class="rangee"><div class="c"><div class="carte">' +
+   '<div class="titre ve">Groupes <b>' + d.groupes.length + '</b></div><div class="corps">' +
+   (d.groupes.length ?
+    '<table class="t"><tr><th>groupe</th><th>concept</th><th>membres</th><th>statut</th>' +
+    '<th>actions</th></tr>' +
+    d.groupes.map(g => '<tr><td class="m">' + g.id + '</td><td>' + g.concept +
+      '</td><td>' + g.noms.join(", ") + '</td><td class="' +
+      (g.statut === "valide" ? "ok" : g.statut === "refuse" ? "ko" : "") + '">' + g.statut +
+      '</td><td>' +
+      (g.statut !== "valide" ? '<button onclick="acte(\'' + g.id + '\',\'valider\')">Valider</button>' : "") +
+      (g.statut === "en attente" ? '<button class="sec" onclick="acte(\'' + g.id +
+        '\',\'refuser\')">Refuser</button>' : "") +
+      '<button class="sec" onclick="acte(\'' + g.id + '\',\'dissoudre\')">Dissoudre</button>' +
+      '</td></tr>').join("") + '</table>' :
+    '<div class="note">Aucun groupe formé.</div>') +
+   '<div class="note">Un groupe en attente ne donne pas accès à l\'atelier de consolidation ' +
+   'tant qu\'il n\'est pas validé.</div></div></div></div>' +
+   '<div class="d"><div class="carte"><div class="titre gr">Sans groupe <b>' +
+   d.sans_groupe.length + '</b></div><div class="corps">' +
+   (d.sans_groupe.length ?
+    '<table class="t"><tr><th>apprenant</th><th>concept</th><th>état</th></tr>' +
+    d.sans_groupe.map(s => '<tr><td>' + s.nom + '</td><td>' + s.concept + '</td><td>' +
+      s.etat + '</td></tr>').join("") + '</table>' :
+    '<div class="note">Tout le monde est affecté.</div>') +
+   '<div class="note">Cette liste ne va qu\'à vous : aucun apprenant ne voit qui n\'a été ' +
+   'invité par personne.</div>' +
+   (d.sans_groupe.length ? '<div><button onclick="composer()">Composer les groupes ' +
+     'restants</button></div><div class="note">Regroupe les apprenants sans groupe, ' +
+     'par concept et par état, dans la limite de la taille maximale. C\'est ' +
+     'l\'attribution d\'office annoncée aux apprenants ; aucune sanction n\'y est ' +
+     'attachée.</div>' : "") +
+   '</div></div></div></div>';
+}
+async function composer() { await post("/api/groupes", {action: "composer"}); await vueGroupes(); }
+async function acte(gid, action) { await post("/api/groupes", {groupe: gid, action: action}); await vueGroupes(); }
+
+// ------------------------------------------------------------------ cohorte
+
+async function vueCohorte() {
+  const d = await get("/api/cohorte");
+  const bloques = d.lignes.filter(l => l.etat === "instances" && l.instances >= 5);
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre ve">Cohorte <b>' + d.apprenants +
+   ' inscrit(s)</b></div><div class="corps">' +
+   '<table class="t"><tr><th>apprenant</th><th>concept</th><th>état</th><th>inst.</th>' +
+   '<th>hors forme</th><th>étayages</th><th>non expliquées</th>' +
+    '<th>généralisation produite</th></tr>' +
+   d.lignes.map(l => '<tr><td>' + l.apprenant + '</td><td>' + l.concept + '</td><td>' +
+     l.etat + '</td><td class="m">' + l.instances + '</td><td class="m">' + l.ecartes +
+     '</td><td class="m">' + l.aides + '</td><td class="' +
+     (l.non_expliquees ? "ko" : "") + '">' + (l.non_expliquees || "") + '</td><td>' +
+     (l.generalisation ? '<pre>' + l.generalisation + '</pre>' :
+      '<span class="note">—</span>') + '</td></tr>').join("") + '</table>' +
+   (bloques.length ? '<div class="note alerte">' + bloques.length +
+     ' apprenant(s) au plafond d\'instances : vérifiez la famille concernée dans ' +
+     'l\'onglet Familles.</div>' :
+     '<div class="note">Aucun apprenant au plafond d\'instances.</div>') +
+   '</div></div>';
+}
+
+// ------------------------------------------------------------------ activités
+
+async function vueActivites() {
+  const d = await get("/api/activites");
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre">Activités exécutables <b>' + d.activites.length +
+   '</b></div><div class="corps"><table class="t">' +
+   '<tr><th>famille</th><th>pool</th><th>ancrage</th><th>signature</th><th>tests</th>' +
+   '<th>énoncé</th></tr>' +
+   d.activites.map(a => '<tr><td>' + a.famille + '</td><td>' + a.pool + '</td><td class="m">' +
+     a.id + '</td><td class="m">' + a.signature + '</td><td class="m">' + a.tests +
+     '</td><td>' + a.enonce + '</td></tr>').join("") + '</table>' +
+   '<div class="note alerte"><b>' + d.familles_sans_activites.length +
+   ' famille(s) sans activités exécutables</b> : ' + d.familles_sans_activites.join(", ") +
+   '. Elles sont spécifiées dans le référentiel mais aucun ancrage n\'a encore été écrit. ' +
+   'Pour en ajouter un, une seule chose est à écrire dans le dictionnaire ACTIVITES de ' +
+   'noyau.py : un identifiant, un énoncé, une signature, une amorce, et la liste des tests ' +
+   'sous forme de couples (expression, résultat attendu).</div></div></div>';
+}
+
+// ------------------------------------------------------------------ réglages
+
+async function vueReglages() {
+  D.reg = await get("/api/reglages");
+  const eff = D.reg.effectif, ref = D.reg.referentiel;
+  const modes = ref.formation_valeurs || ["enseignant", "auto", "auto_avec_accord"];
+  el("vue").innerHTML =
+   '<div class="rangee"><div class="c"><div class="carte">' +
+   '<div class="titre or">Formation des groupes</div><div class="corps">' +
+   '<table class="t"><tr><th>réglage</th><th>valeur</th><th>autorisé par</th></tr>' +
+   '<tr><td>mode de formation</td><td><select onchange="regler(\'formation\',this.value)">' +
+   modes.map(m => '<option' + (m === eff.formation ? " selected" : "") + '>' + m +
+     '</option>').join("") + '</select></td><td class="note">' +
+   (ref.autorise_par || "administrateur") + '</td></tr>' +
+   '<tr><td>taille minimale</td><td><input type="number" value="' + eff.taille_min +
+   '" style="width:60px" onchange="regler(\'taille_min\',parseInt(this.value))"></td>' +
+   '<td class="note">enseignant</td></tr>' +
+   '<tr><td>taille maximale</td><td><input type="number" value="' + eff.taille_max +
+   '" style="width:60px" onchange="regler(\'taille_max\',parseInt(this.value))"></td>' +
+   '<td class="note">enseignant</td></tr>' +
+   '<tr><td>fenêtre d\'auto-organisation (h)</td><td><input type="number" value="' +
+   eff.fenetre_auto_organisation_heures + '" style="width:60px" ' +
+   'onchange="regler(\'fenetre_auto_organisation_heures\',parseInt(this.value))"></td>' +
+   '<td class="note">enseignant</td></tr>' +
+   '</table><div class="note">' + (ref.note || "") + '</div>' +
+   '<div class="note">L\'auto-organisation ne s\'exerce que dans l\'ensemble éligible : ' +
+   'seuls les pairs au même état sur le concept visé sont proposés à l\'apprenant.</div>' +
+   '</div></div></div>' +
+   '<div class="d"><div class="carte"><div class="titre gr">Parcours</div><div class="corps">' +
+   '<table class="t">' + Object.entries(D.reg.reglages_parcours).map(([k, v]) =>
+     '<tr><td>' + k + '</td><td class="m">' + v + '</td></tr>').join("") + '</table>' +
+   '<div class="note">Ces réglages se modifient dans <code>referentiel.json</code>, ' +
+   'qui est le seul fichier de configuration du cours.</div></div></div></div></div>';
+}
+async function regler(champ, valeur) {
+  const g = {}; g[champ] = valeur;
+  await post("/api/reglages", {groupes: g});
+  await vueReglages();
+}
+
+// ------------------------------------------------------------------ journal
+
+async function vueJournal() {
+  const d = await get("/api/journal");
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre gr">Journal des soumissions <b>' + d.total +
+   '</b></div><div class="corps"><table class="t">' +
+   '<tr><th>heure</th><th>appr.</th><th>ch.</th><th>concept</th><th>exercice</th>' +
+   '<th>verdict</th><th>catégorie</th><th>silencieuse</th><th>hors délai</th></tr>' +
+   d.dernieres.slice().reverse().map(e => '<tr><td class="m">' + e.horodatage.slice(11) +
+     '</td><td class="m">' + e.apprenant + '</td><td>' + (e.chapitre || "—") + '</td><td>' +
+     e.concept + '</td><td>' + e.exercice + '</td><td class="' +
+     (e.verdict === "reussite" ? "ok" : "ko") + '">' + e.verdict + '</td><td>' +
+     (e.categorie || "—") + '</td><td>' + (e.silencieuse ? "oui" : "") + '</td><td>' +
+     (e.hors_delai ? '<span class="ko">oui</span>' : "") + '</td></tr>').join("") +
+   '</table><div class="note">Le journal est écrit dans <code>journal.jsonl</code>, au format ' +
+   'attendu par <code>releves.py</code>, qui en tire la rubrique « ce que le tuteur observe » ' +
+   'du manuel. Les étayages pris y figurent sous la catégorie <code>aide-niveau-n</code>.' +
+   '</div></div></div>';
+}
+
+async function vueReleves() {
+  const d = await get("/api/releves");
+  el("vue").innerHTML =
+   '<div class="carte"><div class="titre">Relevés par chapitre <b>' + d.total +
+   ' soumissions</b></div><div class="corps">' +
+   (d.chapitres.length ?
+    d.chapitres.map(c =>
+      '<div style="margin-bottom:12px"><b>Chapitre ' + c.chapitre + '</b> — ' +
+      c.soumissions + ' soumissions de ' + c.apprenants + ' apprenant(s), ' +
+      c.erreurs + ' erreurs (' + c.taux + ' %).' +
+      '<table class="t"><tr><th>erreur</th><th>occurrences</th><th>apprenants touchés</th>' +
+      '<th>silencieuse</th></tr>' +
+      c.detail.map(x => '<tr><td>' + x.libelle + '</td><td class="m">' + x.n +
+        '</td><td class="m">' + x.touches + '</td><td>' +
+        (x.silencieuse ? '<span class="ko">oui</span>' : "") + '</td></tr>').join("") +
+      '</table></div>').join("") :
+    '<div class="note">Aucune soumission enregistrée pour l\'instant.</div>') +
+   '<div class="note">Ces relevés sont ceux que <code>releves.py</code> transforme en ' +
+   'rubrique « ce que le tuteur observe » pour le manuel. Une erreur classée ' +
+   '<i>silencieuse</i> est une erreur que le compilateur ne signale pas : le code ' +
+   'compile et calcule faux. Une catégorie inconnue signale une erreur nouvelle, ' +
+   'à ajouter au catalogue de <code>releves.py</code>.</div>' +
+   '<div class="note">En ligne de commande : <code>python3 releves.py journal.jsonl 4</code> ' +
+   'engendre la rubrique complète du chapitre 4, messages GHC compris.</div>' +
+   '</div></div>';
+}
+
+const VUES = {familles: vueFamilles, releves: vueReleves, contrats: vueContrats, groupes: vueGroupes,
+              cohorte: vueCohorte, activites: vueActivites, reglages: vueReglages,
+              journal: vueJournal};
+onglets(); verifierServeur(); vueFamilles();
+</script>
+</body>
+</html>

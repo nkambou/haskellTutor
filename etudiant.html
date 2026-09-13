@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>HaskellTutor — parcours</title>
+<style>
+  body{font-family:"DejaVu Sans",Arial,sans-serif;font-size:13px;margin:0;padding:14px;
+       background:#f6f8fa;color:#1a1a1a}
+  .bandeau{background:#16283c;color:#fff;padding:9px 12px;border-radius:5px;font-size:14px;
+           margin-bottom:12px;overflow:hidden}
+  .bandeau span{float:right;font-size:12px;opacity:.9}
+  .etapes{margin-bottom:11px;font-size:11.5px;color:#5c6b7a}
+  .etapes b{display:inline-block;padding:3px 10px;border-radius:12px;background:#e3e9ef;
+            color:#8fa3b8;margin-right:6px;font-weight:normal}
+  .etapes b.on{background:#16283c;color:#fff}.etapes b.fait{background:#3f5d7d;color:#fff}
+  .rangee{display:flex;align-items:flex-start;gap:12px}
+  .g{flex:0 0 24%}.c{flex:1 1 auto}.d{flex:0 0 27%}
+  .carte{background:#fff;border:1px solid #c3cdd8;border-radius:5px;margin-bottom:11px}
+  .titre{background:#16283c;color:#fff;padding:5px 10px;font-size:12px;border-radius:4px 4px 0 0;
+         overflow:hidden}
+  .titre b{float:right;font-weight:normal;opacity:.92}
+  .titre.or{background:#3f5d7d}.titre.ve{background:#3f5d7d}.titre.gr{background:#8fa3b8}
+  .corps{padding:9px 10px}
+  code,pre,textarea{font-family:"DejaVu Sans Mono",monospace}
+  textarea{width:100%;min-height:140px;font-size:12.5px;border:1px solid #c3cdd8;border-radius:4px;
+           padding:7px;line-height:1.5;color:#16283c;resize:vertical}
+  textarea.court{min-height:70px}
+  pre{font-size:11.5px;margin:0;white-space:pre-wrap;line-height:1.45}
+  .ok{color:#3f5d7d}.err{color:#3f5d7d}
+  button{background:#16283c;color:#fff;border:0;padding:7px 14px;border-radius:4px;font-size:12.5px;
+         cursor:pointer;margin-right:6px;margin-top:4px}
+  button.sec{background:#fff;color:#16283c;border:1.5px solid #16283c}
+  button:disabled{background:#c3cdd8;color:#5c6b7a;cursor:not-allowed}
+  input{padding:6px 7px;border:1px solid #c3cdd8;border-radius:4px;font-family:inherit;
+        font-size:13px;width:96%;margin-bottom:8px}
+  .opt{display:inline-block;padding:4px 11px;border-radius:4px;border:1px solid #c3cdd8;
+       margin-right:5px;background:#fff;color:#8fa3b8;font-size:12px;cursor:pointer}
+  .opt.on{background:#16283c;color:#fff;border-color:#16283c}
+  .enonce{border-left:2px solid #8fa3b8;background:#f6f8fa;padding:8px 10px;border-radius:0 3px 3px 0;margin:9px 0;line-height:1.45;color:#16283c}
+  .enonce.att{border-left-color:#3f5d7d;background:#eef2f6}
+  .palier{font-size:11.5px;margin-bottom:6px}
+  .palier .p{font-weight:bold;color:#16283c}
+  .cpt{display:block;margin:2px 0 2px 10px;color:#16283c}
+  .etat{display:inline-block;min-width:72px;text-align:center;font-size:10px;border-radius:3px;
+        padding:1px 4px;margin-right:5px;color:#fff}
+  .e0{background:#c3cdd8;color:#8fa3b8}.e1{background:#8fa3b8}.e2{background:#3f5d7d}
+  .e3{background:#16283c}.eh{background:#e3e9ef;color:#8fa3b8}
+  table.al{width:100%;border-collapse:collapse;font-size:12px;font-family:"DejaVu Sans Mono",monospace}
+  table.al td{padding:3px 5px;border-bottom:1px solid #eef2f6}
+  table.al td.n{font-family:"DejaVu Sans",Arial,sans-serif;color:#8fa3b8;width:95px}
+  .pair{display:flex;align-items:center;gap:9px;padding:5px 3px;border-bottom:1px solid #eef2f6;
+        font-size:12px}
+  .pair .st{margin-left:auto;font-size:11px;color:#5c6b7a}
+  .dec{font-size:11.5px;line-height:1.5}
+  .choix{background:#eef2f6;border:1px solid #8fa3b8;border-radius:4px;padding:5px 7px;
+         margin-top:5px;display:block;color:#3f5d7d}
+  .etat{font-family:"DejaVu Sans Mono",monospace;font-size:11.5px;margin:7px 0;color:#16283c}
+  .etat.err{color:#8a2f2f}
+  .note{font-size:11px;color:#5c6b7a;line-height:1.45;margin-top:7px}
+  .jauge{height:9px;background:#eef2f6;border-radius:5px;overflow:hidden;margin:5px 0 3px}
+  .jauge i{display:block;height:100%;background:#16283c;border-radius:5px}
+  .jauge.v i{background:#3f5d7d}
+  .etapem{display:flex;gap:4px;margin-top:6px;font-size:10.5px;text-align:center}
+  .etapem div{flex:1;padding:3px 2px;border-radius:3px;background:#eef2f6;color:#5c6b7a}
+  .etapem div.on{background:#16283c;color:#fff}
+  .etapem div.fait{background:#3f5d7d;color:#fff}
+  .tuteur{border-left:5px solid #16283c;background:#eef2f6;padding:8px 10px;
+          border-radius:0 4px 4px 0;margin:9px 0;line-height:1.45;color:#16283c}
+  .tuteur.ko{border-left-color:#16283c;background:#e3e9ef;color:#16283c}
+  .tuteur.hf{border-left:5px double #16283c;background:#eef2f6;color:#16283c}
+  .verif{border:1px solid #c3cdd8;border-radius:5px;padding:9px 11px;margin-top:9px;
+         background:#fbfcfd}
+  .verif p{margin:0 0 7px}
+  .verif .q{font-size:12.5px;margin:8px 0 4px}
+  .verif label{display:block;font-size:12px;margin:2px 0;cursor:pointer}
+  .verif input{width:auto;margin-right:6px}
+  .tuteur b{display:block;margin-bottom:2px}
+  .sol{border-bottom:1px solid #eef2f6;padding:5px 2px;font-size:11.5px}
+  .sol .a{color:#16283c;cursor:pointer;text-decoration:underline}
+  .minuteur{float:right;font-size:11.5px;color:#5c6b7a}
+  .minuteur.court{color:#3f5d7d;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div class="bandeau">HaskellTutor — parcours vers la programmation fonctionnelle
+  <span id="ent">non inscrit</span></div>
+
+<div class="etapes" id="etapes" style="display:none">
+  <b id="et1">1 · Inscription</b><b id="et2">2 · Régime</b><b id="et3">3 · Groupe</b>
+  <b id="et4">4 · Parcours</b></div>
+
+<div id="ecran"></div>
+
+<script>
+let ident = null, vue = null, pairs = null, etape = 1;
+
+const LANG = "en";
+let CAT = null;
+
+async function chargerTextes(){
+  if (LANG === "fr") { CAT = null; return; }
+  try {
+    CAT = await (await fetch("/api/textes")).json();
+    CAT.ordre = Object.keys(CAT.phrases).sort((a, b) => b.length - a.length);
+  } catch (e) { CAT = null; }
+}
+
+function tr(t){
+  if (!CAT || typeof t !== "string" || !t.trim()) return t;
+  let bouts = [[t, false]];
+  for (const fr of CAT.ordre) {
+    if (bouts.every(([x, f]) => f || x.indexOf(fr) < 0)) continue;
+    const en = CAT.phrases[fr], suite = [];
+    for (const [txt, fige] of bouts) {
+      if (fige || txt.indexOf(fr) < 0) { suite.push([txt, fige]); continue; }
+      const parts = txt.split(fr);
+      parts.forEach((pp, i) => { if (i) suite.push([en, true]); if (pp) suite.push([pp, false]); });
+    }
+    bouts = suite;
+  }
+  let out = bouts.map(([x]) => x).join("");
+  for (const [fr, en] of Object.entries(CAT.etiquettes || {})) {
+    if (fr !== en) out = out.replace(new RegExp("(?<![\\w-])" + fr + "(?![\\w-])", "g"), en);
+  }
+  return out;
+}
+
+// La traduction s'applique aux noeuds de texte du document, apres chaque rendu.
+// Les balises de code sont laissees telles quelles : le code de l'apprenant et
+// la sortie du compilateur ne se traduisent pas.
+const SANS_TRADUCTION = new Set(["CODE", "PRE", "TEXTAREA", "SCRIPT", "STYLE"]);
+function traduireDOM(racine){
+  if (!CAT) return;
+  const p = document.createTreeWalker(racine || document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(n){
+      let e = n.parentElement;
+      while (e) { if (SANS_TRADUCTION.has(e.tagName)) return NodeFilter.FILTER_REJECT;
+                  e = e.parentElement; }
+      return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }});
+  const cibles = [];
+  while (p.nextNode()) cibles.push(p.currentNode);
+  for (const n of cibles) { const v = tr(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+  document.querySelectorAll("[placeholder]").forEach(x =>
+    x.setAttribute("placeholder", tr(x.getAttribute("placeholder"))));
+  document.querySelectorAll("button, option").forEach(x => {
+    if (!x.children.length) { const v = tr(x.textContent); if (v !== x.textContent) x.textContent = v; }
+  });
+}
+
+
+const VERSION_ATTENDUE = "3.8";
+
+function alerteServeur(msg) {
+  let z = document.getElementById("alerteServeur");
+  if (!z) {
+    z = document.createElement("div");
+    z.id = "alerteServeur";
+    z.style.cssText = "background:#e3e9ef;border:1px solid #8fa3b8;color:#16283c;" +
+      "padding:9px 12px;border-radius:5px;margin-bottom:12px;font-size:12.5px";
+    document.body.insertBefore(z, document.body.firstChild);
+  }
+  z.innerHTML = msg;
+}
+
+async function verifierServeur() {
+  try {
+    const v = await (await fetch("/api/version")).json();
+    if (v.version !== VERSION_ATTENDUE)
+      alerteServeur("<b>Serveur en version " + v.version + ", page en version " +
+        VERSION_ATTENDUE + ".</b> Arrêtez le serveur et relancez-le depuis le dossier " +
+        "où vous avez copié les nouveaux fichiers.");
+  } catch (e) {
+    alerteServeur("<b>Le serveur ne répond pas à /api/version.</b> Il s'agit " +
+      "probablement d'un ancien processus encore en écoute sur ce port. " +
+      "Arrêtez-le (<code>pkill -f serveur.py</code>) puis relancez " +
+      "<code>python3 serveur.py</code>.");
+  }
+}
+
+async function api(route, corps) {
+  const opt = corps ? {method:"POST", headers:{"Content-Type":"application/json"},
+                       body: JSON.stringify(corps)} : {};
+  let d;
+  try {
+    d = await (await fetch(route, opt)).json();
+  } catch (e) {
+    alerteServeur("<b>Le serveur n'a pas répondu</b> à " + route + ".");
+    throw e;
+  }
+  if (d && d.erreur) {
+    alerteServeur("<b>" + d.erreur + "</b> — la page attend une version plus récente " +
+      "du serveur. Arrêtez le processus en cours et relancez <code>python3 serveur.py</code> " +
+      "depuis le dossier contenant les nouveaux fichiers.");
+  }
+  return d;
+}
+function el(id){ return document.getElementById(id); }
+function etapes(n) {
+  etape = n; el("etapes").style.display = "block";
+  for (let i = 1; i <= 4; i++)
+    el("et" + i).className = i < n ? "fait" : (i === n ? "on" : "");
+}
+
+// ---------------------------------------------------------------- 1. inscription
+
+function ecranInscription() {
+  el("ecran").innerHTML =
+   '<div class="rangee"><div class="c"><div class="carte"><div class="titre">S\'inscrire</div>' +
+   '<div class="corps">' +
+   '<input id="nom" placeholder="Nom affiché" value="Amina B.">' +
+   '<input id="cohorte" placeholder="Code du cours" value="INF3105-A26-G20">' +
+   '<div class="note">Le cours enregistre vos soumissions, leur résultat de compilation et ' +
+   'l\'état de chaque concept. Vos soumissions sont réellement compilées par GHC. ' +
+   'Vos coéquipiers voient votre nom et votre état sur le concept en cours ; ' +
+   'les autres apprenants ne voient rien.</div>' +
+   '<div><button onclick="inscrire()">Continuer</button></div>' +
+   '</div></div></div></div>';
+}
+
+async function inscrire() {
+  const r = await api("/api/inscription",
+    {nom: el("nom").value, cohorte: el("cohorte").value});
+  ident = r.ident;
+  vue = await api("/api/etat?ident=" + ident);
+  etapes(2); ecranRegime();
+}
+
+// ---------------------------------------------------------------- 2. régime
+
+function ecranRegime() {
+  const impose = vue.collaboration_requise;
+  el("ent").textContent = vue.nom + " · " + vue.cohorte;
+  el("ecran").innerHTML =
+   '<div class="rangee"><div class="c"><div class="carte">' +
+   '<div class="titre">Régime de travail <b>modifiable à chaque palier</b></div><div class="corps">' +
+   '<div><span class="opt" id="oSolo" onclick="choisirRegime(\'solo\')">seul</span>' +
+   '<span class="opt" id="oGroupe" onclick="choisirRegime(\'groupe\')">en groupe</span></div>' +
+   '<div class="enonce" style="margin-top:10px">Les activités de production restent ' +
+   'individuelles dans les deux cas. Le groupe intervient sur la consolidation, une fois ' +
+   'qu\'un concept a été généralisé.</div>' +
+   (impose ? '<div class="enonce att">Sur le concept <b>' + vue.libelle +
+     '</b>, votre enseignant a fixé le régime « ' + vue.contrat.regime +
+     ' » : votre choix ne s\'appliquera pas à cette activité.</div>' : '') +
+   '<div><button onclick="suiteRegime()">Continuer</button></div>' +
+   '</div></div></div></div>';
+  majRegime();
+}
+function majRegime() {
+  el("oSolo").className = "opt" + (vue.regime === "solo" ? " on" : "");
+  el("oGroupe").className = "opt" + (vue.regime === "groupe" ? " on" : "");
+}
+async function choisirRegime(v) { vue = await api("/api/regime", {ident: ident, regime: v}); majRegime(); }
+async function suiteRegime() {
+  if (vue.regime === "groupe" || vue.collaboration_requise) { etapes(3); await ecranGroupe(); }
+  else { etapes(4); await rafraichir(); }
+}
+
+// ---------------------------------------------------------------- 3. groupe
+
+async function ecranGroupe() {
+  pairs = await api("/api/pairs?ident=" + ident);
+  const m = pairs.mode;
+  const dispo = pairs.pairs.filter(p => p.disponible);
+  let corps = "";
+  if (pairs.groupe) {
+    corps = '<div class="enonce">Vous appartenez au groupe <b>' + pairs.groupe.id +
+      '</b> (' + pairs.groupe.statut + ').</div>' +
+      '<button onclick="quitterGroupe()" class="sec">Quitter le groupe</button>' +
+      '<button onclick="etapes(4);rafraichir()">Aller au parcours</button>';
+  } else if (m.formation === "enseignant") {
+    corps = '<div class="enonce">La composition des groupes est réservée à l\'enseignant ' +
+      'pour ce cours. Vous serez averti quand le vôtre sera formé.</div>' +
+      '<button onclick="etapes(4);rafraichir()">Aller au parcours</button>';
+  } else {
+    corps =
+      '<div class="enonce">Ces personnes sont au même point que vous sur le concept visé. ' +
+      'Elles sont les seules proposées : un groupe dont les membres ne sont pas au même état ' +
+      'ne consolide pas, il se divise le travail.</div>' +
+      (dispo.length ? dispo.map(p =>
+        '<div class="pair"><input type="checkbox" style="width:auto" value="' + p.ident +
+        '" class="inv"> ' + p.nom + '<span class="st">' + p.etat + ' · disponible</span></div>'
+      ).join("") : '<div class="note">Personne n\'est encore au même point que vous. ' +
+        'Revenez après avoir avancé, ou travaillez seul pour l\'instant.</div>') +
+      '<div class="note">Groupe de ' + m.taille_min + ' à ' + m.taille_max + ' membres · ' +
+      (m.formation === "auto_avec_accord" ? "accord de l'enseignant requis" :
+       "formation libre") + ' · fenêtre de ' + m.fenetre_auto_organisation_heures + ' h, ' +
+      'puis attribution d\'office. Aucune sanction n\'y est attachée.</div>' +
+      '<div class="note">Vous ne voyez pas qui n\'a été invité par personne, et personne ' +
+      'ne le voit non plus. Cette information ne va qu\'à l\'enseignant.</div>' +
+      '<div><button onclick="formerGroupe()"' + (dispo.length ? "" : " disabled") +
+      '>Former le groupe</button>' +
+      '<button class="sec" onclick="etapes(4);rafraichir()">Travailler seul pour l\'instant</button>' +
+      '</div><div id="msg"></div>';
+  }
+  el("ecran").innerHTML =
+   '<div class="rangee"><div class="c"><div class="carte">' +
+   '<div class="titre ve">Constituer votre groupe <b>concept : ' + (vue.libelle || "—") +
+   '</b></div><div class="corps">' + corps + '</div></div></div></div>';
+}
+
+async function formerGroupe() {
+  const invites = Array.from(document.querySelectorAll(".inv:checked")).map(c => c.value);
+  const r = await api("/api/groupe", {ident: ident, invites: invites});
+  if (r.refus) { el("msg").innerHTML = '<div class="note">' + r.refus + '</div>'; return; }
+  await ecranGroupe();
+}
+async function quitterGroupe() { await api("/api/groupe", {ident: ident, action: "quitter"}); await ecranGroupe(); }
+
+// ---------------------------------------------------------------- 4. parcours
+
+async function rafraichir() {
+  vue = await api("/api/etat?ident=" + ident);
+  etapes(4);
+  el("ent").textContent = vue.nom + " · " + vue.cohorte + " · " + (vue.palier || "—");
+  el("ecran").innerHTML =
+   '<div class="rangee">' +
+   '<div class="g"><div class="carte"><div class="titre">Carte des concepts</div>' +
+   '<div class="corps" id="carte"></div></div>' +
+   '<div class="carte"><div class="titre ve">Groupe</div><div class="corps dec" id="grp"></div></div>' +
+   '</div>' +
+   '<div class="c"><div class="carte"><div class="titre gr">Séance ' +
+   '<b id="tagseance"></b></div><div class="corps dec" id="seance"></div></div>' +
+   '<div id="centre"></div></div>' +
+   '<div class="d">' +
+   '<div class="carte"><div class="titre or">Décision du tuteur <b id="tagdec"></b></div>' +
+   '<div class="corps dec" id="dec"></div></div>' +
+   '<div class="carte"><div class="titre gr">Corpus</div><div class="corps dec" id="corpus"></div></div>' +
+   '<div class="carte"><div class="titre ve">Ma progression <b id="tagprog"></b></div>' +
+   '<div class="corps dec" id="progres"></div></div>' +
+   '<div class="carte"><div class="titre gr">Mes solutions <b id="tagsol"></b></div>' +
+   '<div class="corps dec" id="solutions"></div></div>' +
+   '<div class="carte"><div class="titre ve">Étayage <b id="tagaide"></b></div>' +
+   '<div class="corps dec" id="etayage"></div></div>' +
+   '<div class="carte"><div class="titre gr">Mon activité</div>' +
+   '<div class="corps dec" id="histo">…</div></div>' +
+   '</div></div>';
+  dessinerCarte(); dessinerCentre(); dessinerDecision(); dessinerGroupe();
+  dessinerEtayage(); dessinerHistorique(); dessinerProgres(); dessinerSolutions();
+  dessinerSeance(); lancerMinuteur();
+  traduireDOM();
+}
+
+function classeEtat(e) {
+  if (e === "acquired") return "e3"; if (e === "generalised") return "e2";
+  if (e === "verrou") return "e0"; return "e1";
+}
+function dessinerCarte() {
+  el("carte").innerHTML = vue.carte.map(p =>
+    '<div class="palier"><span class="p">' + p.palier + ' · ' + p.titre + '</span>' +
+    p.concepts.map(c => '<span class="cpt"><span class="etat ' +
+      (c.executable ? classeEtat(c.etat) : "eh") + '">' +
+      (c.executable ? c.etat : "hors ligne") + '</span>' + c.libelle + '</span>').join("") +
+    '</div>').join("") +
+    '<div class="note">Un concept passe à « acquis » au réemploi spontané du schéma, ' +
+    'pas à la réussite de l\'activité.</div>';
+}
+function dessinerGroupe() {
+  const g = vue.groupe;
+  el("grp").innerHTML = (g ?
+    'Groupe <b>' + g.id + '</b> · ' + g.statut + '<br>' + g.membres.length + ' membre(s)' :
+    'Aucun groupe sur ce concept.') +
+    '<div class="note">Régime : ' + vue.regime +
+    (vue.collaboration_requise ? ' · imposé par l\'enseignant : ' + vue.contrat.regime : '') +
+    '</div><button class="sec" onclick="etapes(3);ecranGroupe()">Gérer mon groupe</button>';
+}
+
+function libelleAide() {
+  if (!vue.aides_max) return "Aide fermée par l'enseignant";
+  const reste = vue.aides_max - (vue.aides_prises || 0);
+  if (reste <= 0) return "Étayage épuisé (" + vue.aides_max + "/" + vue.aides_max + ")";
+  return "Demander un étayage (" + (vue.aides_prises || 0) + "/" + vue.aides_max + ")";
+}
+
+function tableauAlignement(r) {
+  return '<table class="al">' + r.lignes.map(l =>
+    '<tr><td class="n">' + l.nom + '</td><td>' + (l.base || "—") +
+    '</td><td>' + (l.pas || "—") + '</td></tr>').join("") + '</table>';
+}
+
+function dessinerCentre() {
+  const centre = el("centre");
+
+  if (vue.atelier) {
+    const a = vue.atelier;
+    centre.innerHTML =
+     '<div class="carte"><div class="titre ve">Atelier d\'équipe · consolidation ' +
+     '<b>' + a.pretes + ' généralisation(s) sur ' + a.membres.length + '</b></div><div class="corps">' +
+     '<div class="enonce">Chacun a produit sa généralisation seul. Comparez-les : ' +
+     'elles ne sont jamais identiques, et c\'est le matériau de la séance.</div>' +
+     a.membres.map(m => '<div style="margin-bottom:7px"><b>' + m.nom +
+       (m.moi ? " (vous)" : "") + '</b><br>' +
+       (m.generalisation ? '<pre>' + m.generalisation + '</pre>' :
+        '<span class="note">n\'a pas encore généralisé</span>') + '</div>').join("") +
+     '<div class="note">Votre parcours individuel reste le vôtre : rien de ce que produit ' +
+     'l\'équipe ne modifie l\'état de vos concepts. Seuls vos propres réemplois ouvrent ' +
+     'le concept suivant.</div>' +
+     '<button onclick="rafraichir()">Continuer mon parcours</button>' +
+     '</div></div>' + (vue.activite ? blocActivite() : "");
+    return;
+  }
+
+  if (vue.abstraction && (vue.decision === "abstraction" || vue.decision === "guidance")) {
+    const r = vue.abstraction, guide = r.guide, mode = r.mode;
+    centre.innerHTML =
+     '<div class="carte"><div class="titre or">' +
+     (guide ? "Guidage" : "Atelier de remontée") +
+     ' <b>' + (guide ? "la remontée ne s\'est pas déclenchée" :
+               "mode " + mode + " · " + r.points + " point(s) de variation") + '</b></div>' +
+     '<div class="corps">' +
+     '<div class="enonce">' +
+     (guide ? vue.motif + '. Le tuteur fait donc l\'alignement avec vous.' :
+      mode === "exposed" ?
+        'Votre enseignant a réglé ce concept en remontée exposée : le tuteur montre ' +
+        'directement la charpente attendue.' :
+      mode === "guided" ?
+        'Voici vos définitions, alignées par le tuteur, avec ce qui varie mis en évidence.' :
+        'Voici les fonctions que <b>vous</b> avez écrites. Le tuteur a aligné leurs cas de ' +
+        'base et leurs cas récursifs. Écrivez une seule définition qui les remplace toutes.') +
+     '</div>' +
+     tableauAlignement(r) +
+     (mode === "discovery" && !guide ? "" :
+       '<div class="note">Forme commune obtenue par alignement : <code>' + r.forme +
+       '</code>. Les trous notés ?n sont les points de variation.</div>') +
+     (r.squelette ? '<div class="enonce"><b>Charpente attendue</b><pre>' + r.squelette +
+       '</pre></div>' : "") +
+     '<div class="note">Écrivez votre définition ci-dessous. Elle est conservée et servira ' +
+     'à l\'atelier d\'équipe.</div>' +
+     '<textarea id="gen" class="court">' + (vue.generalisation || "") + '</textarea>' +
+     '<div><button onclick="generaliser()">Valider ma généralisation</button>' +
+     '<button class="sec" onclick="demanderAide(\'remontee\')">' + libelleAide() + '</button>' +
+     '<button class="sec" onclick="refuserAtelier()">Pas encore</button></div>' +
+     '<div id="aide"></div><div id="msg"></div>' +
+     '</div></div>';
+    return;
+  }
+
+  if (!vue.activite) {
+    centre.innerHTML = '<div class="carte"><div class="titre gr">Rien à faire pour le moment</div>' +
+      '<div class="corps">' + vue.motif + '</div></div>';
+    return;
+  }
+  centre.innerHTML = blocActivite();
+}
+
+function blocActivite() {
+  const a = vue.activite;
+  return '<div class="carte"><div class="titre">' +
+    (vue.decision === "reuse" ? "Activité de réemploi" : "Activité engendrée") +
+    ' <b>' + vue.famille + ' · ' + a.id + '</b></div><div class="corps">' +
+    '<div class="enonce">' + a.enonce + '<br><code>' + a.signature + '</code></div>' +
+    (vue.consigne_forme ? '<div class="tuteur hf"><b>Forme attendue</b>' +
+      'Écrivez cette fonction en distinguant explicitement le cas de la liste vide et ' +
+      'le cas où elle a au moins un élément. Une solution correcte écrite autrement ' +
+      'sera acceptée et conservée, mais elle ne pourra pas être comparée aux autres.' +
+      '<div><button class="sec" onclick="pourquoiForme()">Pourquoi cette forme ?</button>' +
+      '</div><div id="pourquoi"></div></div>' : "") +
+    '<textarea id="code">' + a.amorce + '</textarea>' +
+    '<div><button onclick="soumettre()">Compiler et tester</button>' +
+    '<button class="sec" id="btnaide" onclick="demanderAide()">' + libelleAide() + '</button></div>' +
+    (vue.aide_proposee ? '<div class="note">Deux tentatives sans succès : vous pouvez ' +
+      'demander un étayage.</div>' : "") +
+    '<div id="aide"></div><div id="sortie"></div></div></div>';
+}
+
+function dessinerDecision() {
+  el("tagdec").textContent = vue.decision;
+  el("dec").innerHTML = vue.motif +
+    '<span class="choix">Décision : ' + vue.decision + '</span>' +
+    '<div class="note">Contrat : assistance ' + vue.contrat.assistance +
+    ' · remontée ' + vue.contrat.abstraction + ' · régime ' + vue.contrat.regime + '</div>' +
+    (vue.reemplois ? '<div class="note">Réemplois spontanés : ' + vue.reemplois + '</div>' : "");
+  el("corpus").innerHTML =
+    (vue.corpus.length ? vue.corpus.map(n => '· ' + n).join("<br>") : "vide") +
+    (vue.ecartes.length ? '<div class="note">Écartées de l\'alignement : ' +
+      vue.ecartes.map(e => e[0] + " (" + e[1] + ")").join(", ") + '</div>' : "");
+}
+
+let minuteur = null;
+
+function dessinerSeance() {
+  const z = el("seance"); if (!z) return;
+  const auto = (vue.preferences || {}).avance !== "manuel";
+  el("tagseance").innerHTML = vue.delai_minutes ?
+    'délai de ' + vue.delai_minutes + ' min par activité' : 'sans contrainte de temps';
+  z.innerHTML =
+    'Après une réussite : ' +
+    '<span class="opt' + (auto ? " on" : "") + '" onclick="rythme(\'auto\')">' +
+    'enchaîner automatiquement</span>' +
+    '<span class="opt' + (auto ? "" : " on") + '" onclick="rythme(\'manuel\')">' +
+    'attendre que je continue</span>' +
+    '<span id="chrono" class="minuteur"></span>' +
+    '<div class="note">' +
+    (vue.sequence === "must-complete" ?
+      "Votre enseignant demande de terminer la séquence sur ce concept avant de quitter." :
+      "Vous pouvez quitter la séance à tout moment ; votre dossier est conservé.") +
+    '</div>' +
+    '<div><button class="sec"' + (vue.peut_quitter ? "" : " disabled") +
+    ' onclick="quitterSeance()">Quitter la séance</button></div>' +
+    '<div id="msgseance"></div>';
+}
+
+async function rythme(v) {
+  vue = await api("/api/preference", {ident: ident, avance: v});
+  dessinerSeance();
+}
+
+async function quitterSeance() {
+  const r = await api("/api/seance", {ident: ident, action: "quitter"});
+  if (r.refus) { el("msgseance").innerHTML = '<div class="note">' + r.refus + '</div>'; return; }
+  if (minuteur) clearInterval(minuteur);
+  el("ecran").innerHTML =
+    '<div class="rangee"><div class="c"><div class="carte">' +
+    '<div class="titre ve">Séance suspendue</div><div class="corps">' +
+    '<div class="enonce">Votre dossier est conservé : solutions écrites, généralisations, ' +
+    'état de chaque concept. Vous reprendrez exactement où vous en êtes.</div>' +
+    '<button onclick="reprendreSeance()">Reprendre</button>' +
+    '</div></div></div></div>';
+}
+async function reprendreSeance() {
+  await api("/api/seance", {ident: ident, action: "reprendre"});
+  await rafraichir();
+}
+
+function lancerMinuteur() {
+  if (minuteur) clearInterval(minuteur);
+  if (!vue.reste_secondes && vue.reste_secondes !== 0) return;
+  let reste = vue.reste_secondes;
+  const peindre = () => {
+    const c = el("chrono"); if (!c) return;
+    const m = Math.floor(Math.abs(reste) / 60), s = Math.abs(reste) % 60;
+    c.className = "minuteur" + (reste <= 60 ? " court" : "");
+    c.textContent = reste > 0 ?
+      "temps restant " + m + " min " + (s < 10 ? "0" : "") + s :
+      "délai dépassé de " + m + " min";
+    reste -= 1;
+  };
+  peindre();
+  minuteur = setInterval(peindre, 1000);
+}
+
+function dessinerProgres() {
+  const p = vue.progres; if (!p) return;
+  const z = el("progres"); if (!z) return;
+  const etat = p.etat;
+  const pct = Math.min(100, Math.round(100 * p.solutions / Math.max(p.minimum, 1)));
+  el("tagprog").textContent = vue.libelle || "";
+  let h =
+    (p.objectif ? '<div class="note" style="margin-top:0">Ce qu\'il faut atteindre : ' +
+      p.objectif + '.</div>' : "") +
+    '<div class="etapem">' +
+    '<div class="' + (etat === "instances" ? "on" : "fait") + '">écrire</div>' +
+    '<div class="' + (etat === "generalised" ? "on" : etat === "acquired" ? "fait" : "") +
+      '">comparer</div>' +
+    '<div class="' + (etat === "acquired" ? "fait" : "") + '">réemployer</div></div>';
+  if (etat === "instances") {
+    h += '<div class="note">Solutions au dossier : <b>' + p.solutions + '</b> sur ' +
+      p.minimum + ' au minimum.</div>' +
+      (p.resolutions ? '<div class="note">Problèmes résolus autrement : <b>' +
+        p.resolutions + '</b>. Ces réussites sont enregistrées ; elles ne servent ' +
+        'simplement pas à la comparaison.</div>' : "") +
+      '<div class="jauge"><i style="width:' + pct + '%"></i></div>';
+    if (p.attendu !== null && p.solutions >= 2) {
+      const q = Math.min(100, Math.round(100 * p.points / Math.max(p.attendu, 1)));
+      h += '<div class="note">Ce qui change d\'une solution à l\'autre : <b>' + p.points +
+        '</b> ; le tuteur en cherche ' + p.attendu +
+        (p.stable ? ", et le compte ne bouge plus" : "") + '.</div>' +
+        '<div class="jauge v"><i style="width:' + q + '%"></i></div>';
+    }
+    h += '<div class="note">Le tuteur ne vous montrera vos solutions ensemble que lorsque ' +
+      'ce compte sera atteint et stable. Il n\'y a rien à mémoriser d\'ici là.</div>';
+  } else if (etat === "generalised") {
+    h += '<div class="note">Réemplois spontanés : <b>' + p.reemplois + '</b> sur ' +
+      p.reemplois_requis + '.</div>' +
+      '<div class="jauge v"><i style="width:' +
+      Math.round(100 * p.reemplois / p.reemplois_requis) + '%"></i></div>' +
+      '<div class="note">Un réemploi ne compte que si vous employez ce que vous venez ' +
+      'de trouver, plutôt qu\'une récursion écrite à la main.</div>';
+  } else {
+    h += '<div class="note">Concept acquis.</div>';
+  }
+  z.innerHTML = h;
+}
+
+function dessinerSolutions() {
+  const z = el("solutions"); if (!z) return;
+  const s = vue.solutions || [];
+  el("tagsol").textContent = s.length;
+  z.innerHTML = s.length ? s.map(x =>
+    '<div class="sol"><span class="a" onclick="voirSolution(\'' + x.activite + '\')">' +
+    x.activite + '</span> <span class="note">' + x.statut + '</span>' +
+    (x.forme ? '<br><code>' + x.forme + '</code>' : "") + '</div>').join("") +
+    '<div class="note">Cliquez sur une solution pour la revoir et la reprendre. ' +
+    'La reprendre remplace votre version dans le dossier.</div>' :
+    '<div class="note">Aucune solution enregistrée pour ce concept.</div>';
+}
+
+async function voirSolution(nom) {
+  const r = await api("/api/reprendre", {ident: ident, activite: nom});
+  if (r.refus) return;
+  vue.activite = r.activite;
+  vue.decision = vue.decision === "abstraction" ? vue.decision : vue.decision;
+  el("centre").innerHTML =
+    '<div class="carte"><div class="titre or">Reprise <b>' + nom + '</b></div>' +
+    '<div class="corps"><div class="enonce">' + r.activite.enonce + '<br><code>' +
+    r.activite.signature + '</code></div>' +
+    '<div class="note">Voici la solution que vous aviez écrite. Modifiez-la et ' +
+    'soumettez-la de nouveau si vous voulez l\'améliorer ; sinon, revenez au parcours.</div>' +
+    '<textarea id="code">' + r.activite.amorce + '</textarea>' +
+    '<div><button onclick="soumettre()">Compiler et tester</button>' +
+    '<button class="sec" onclick="rafraichir()">Revenir au parcours</button></div>' +
+    '<div id="aide"></div><div id="sortie"></div></div></div>';
+}
+
+function dessinerEtayage() {
+  el("tagaide").textContent = vue.aides_max ?
+    (vue.aides_prises || 0) + " / " + vue.aides_max : "fermé";
+  const ouvert = vue.aides_max > 0;
+  el("etayage").innerHTML =
+    (ouvert ?
+      "Trois niveaux, à la demande. Aucun ne donne la solution ni ne nomme le schéma." :
+      "Votre enseignant a fermé l'assistance sur ce concept.") +
+    '<div><button class="sec"' + (ouvert ? "" : " disabled") +
+    ' onclick="demanderAide(' + (vue.decision === "abstraction" || vue.decision === "guidance" ?
+      "'abstraction'" : "null") + ')">' + libelleAide() + '</button></div>' +
+    '<div id="aidelat"></div>' +
+    (vue.aide_proposee ? '<div class="note">Deux tentatives sans succès : ' +
+      'le tuteur vous propose un étayage.</div>' : "");
+}
+
+async function dessinerHistorique() {
+  const d = await api("/api/journal?ident=" + ident);
+  const h = el("histo"); if (!h) return;
+  h.innerHTML = d.total + " soumission(s) enregistrée(s)." +
+    (d.dernieres.length ? '<div class="note">' + d.dernieres.slice(-6).reverse().map(x =>
+      x.horodatage.slice(11) + " · " + x.exercice + " · " +
+      (x.verdict === "reussite" ? "réussi" : x.categorie)).join("<br>") + '</div>' : "");
+  traduireDOM();
+}
+
+async function soumettre() {
+  const s = el("sortie");
+  s.innerHTML = '<div class="note">compilation en cours…</div>';
+  const r = await api("/api/soumettre",
+    {ident: ident, activite: vue.activite.id, code: el("code").value});
+  const v = r.verdict;
+  // la sortie brute du compilateur reste dans un pre, qui n'est pas traduit ;
+  // les lignes d'etat sont du texte d'interface et le sont
+  let html = "";
+  if (!v.compile) html += '<pre class="err">' + v.message + '</pre>';
+  else if (v.reussite) html += '<div class="etat ok">Compilation réussie. ' +
+       v.attendu.length + ' tests réussis.</div>';
+  else html += '<div class="etat err">Compilation réussie, mais ' +
+       v.obtenu.map((o, i) => o + " au lieu de " + v.attendu[i]).join(" ; ") + '</div>';
+  if (r.admission) html += '<div class="note">' +
+    (r.admission.admis ? "Soumission admise au corpus d'alignement." :
+     "Non admise à l'alignement : " + r.admission.motif) + '</div>';
+  if (r.reemploi) html += '<div class="note">Schéma employé : ' +
+    (r.reemploi.schema_employe ? "oui, réemploi compté" :
+     "non, récursion explicite ; le réemploi ne compte pas") + '</div>';
+  if (r.tuteur) html = '<div class="tuteur' +
+    (r.tuteur.ton === "echec" ? " ko" : r.tuteur.ton === "off_form" ? " hf" : "") + '">' +
+    '<b>Le tuteur</b>' + r.tuteur.texte +
+    (r.tuteur.invite ? ' <span class="note">' + r.tuteur.invite + '</span>' : "") +
+    (r.tuteur.ton === "off_form" ?
+      '<div><button class="sec" onclick="pourquoiForme()">Pourquoi cette forme ?</button>' +
+      '</div><div id="pourquoi"></div>' : "") +
+    '</div>' + html;
+  if (r.desescalade) html = '<div class="note">Le tuteur ne redemande pas une ' +
+    'troisième fois : il passe à un autre problème de même nature.</div>' + html;
+  if (r.revision) html = '<div class="note">Votre version précédente a été remplacée ' +
+    'dans le dossier.</div>' + html;
+  if (r.hors_delai) html = '<div class="tuteur ko"><b>Le tuteur</b>Cette soumission arrive ' +
+    'après le délai fixé par votre enseignant. Elle est enregistrée comme telle ; ' +
+    'elle compte quand même.</div>' + html;
+  const horsForme = r.tuteur && r.tuteur.ton === "off_form";
+  const auto = (vue.preferences || {}).avance !== "manuel" && !horsForme;
+  if (v.reussite && !auto)
+    html += '<div style="margin-top:9px"><button onclick="rafraichir()">' +
+      'Activité suivante</button><button class="sec" onclick="rafraichir()">' +
+      'Rester sur cet écran</button></div>';
+  if (r.verification) {
+    html += '<div class="verif" id="verif"><p><b>Une question sur votre solution.</b> ' +
+      'Le tuteur vous demande de temps à autre d\'expliquer ce que fait votre code. ' +
+      'Cela ne met pas votre travail en doute : mettre une solution en mots est ' +
+      'une des façons les plus efficaces de l\'apprendre.</p>' +
+      r.verification.questions.map(q =>
+        '<div class="q"><b>' + q.question + '</b></div>' +
+        q.options.map((o, k) =>
+          '<label><input type="radio" name="v_' + q.id + '" value="' +
+          o.replace(/"/g, "&quot;") + '"> <code>' + o + '</code></label>').join("")).join("") +
+      '<div><button onclick="repondreVerification(\'' + vue.activite.id +
+      '\')">Répondre</button></div><div id="retourverif"></div></div>';
+  }
+  s.innerHTML = html;
+  if (v.reussite && auto && !r.verification) {
+    let n = 4;
+    const z = document.createElement("div");
+    z.className = "note";
+    s.appendChild(z);
+    const t = setInterval(() => {
+      z.innerHTML = "Activité suivante dans " + n + " s. " +
+        "<button class=\"sec\" onclick=\"annulerEnchainement()\">Rester ici</button> " +
+        "<button onclick=\"rafraichir()\">Continuer maintenant</button>";
+      if (n-- <= 0) { clearInterval(t); rafraichir(); }
+    }, 1000);
+    window.__enchainement = t;
+    z.innerHTML = "Activité suivante dans " + n + " s.";
+  }
+  traduireDOM();
+}
+
+function annulerEnchainement() {
+  if (window.__enchainement) clearInterval(window.__enchainement);
+  const z = el("sortie");
+  if (z) z.innerHTML += '<div class="note">Enchaînement suspendu. ' +
+    '<button onclick="rafraichir()">Activité suivante</button></div>';
+}
+
+async function repondreVerification(activite) {
+  const reponses = {};
+  document.querySelectorAll("#verif input:checked").forEach(i => {
+    reponses[i.name.slice(2)] = i.value;
+  });
+  const r = await api("/api/verifier", {ident: ident, activite: activite, reponses: reponses});
+  const z = el("retourverif");
+  if (r.refus) { z.innerHTML = '<div class="note">' + r.refus + '</div>'; return; }
+  z.innerHTML = '<div class="tuteur' + (r.statut === "expliquee" ? "" : " ko") + '">' +
+    '<b>Le tuteur</b>' + r.message + '</div>' +
+    r.retours.map(x => '<div class="note">' + (x.correct ? "✓ " : "· ") + x.suite +
+      '</div>').join("") +
+    '<div style="margin-top:8px"><button onclick="rafraichir()">Continuer</button></div>';
+  traduireDOM();
+}
+
+async function pourquoiForme() {
+  const r = await api("/api/pourquoi", {ident: ident,
+    activite: vue.activite ? vue.activite.id : null});
+  const z = el("pourquoi");
+  if (z) z.innerHTML = '<div class="enonce" style="margin-top:8px;white-space:pre-line">' +
+    r.texte + '</div>';
+  traduireDOM();
+}
+
+async function demanderAide(contexte) {
+  const z = el("aide") || el("aidelat");
+  const r = await api("/api/aide", {ident: ident, contexte: contexte || "activite",
+                                    activite: vue.activite ? vue.activite.id : null});
+  if (r.refus) {
+    z.innerHTML = '<div class="note">' + r.refus + '</div>' +
+      (r.rappel ? '<div class="enonce">' + r.rappel.map((t, k) =>
+        '<b>Niveau ' + (k + 1) + '.</b> ' + t).join("<br>") + '</div>' : "");
+    vue.aides_prises = r.sur;
+  } else {
+    z.innerHTML = '<div class="enonce"><b>Étayage, niveau ' + r.niveau + ' sur ' + r.sur + '</b>' +
+      (r.fonde_sur && r.fonde_sur !== "none" ?
+        ' <span class="note">— fondé sur votre dernière erreur : ' + r.fonde_sur + '</span>' : "") +
+      '<br>' + r.texte + '</div>';
+    vue.aides_prises = r.niveau;
+  }
+  const b = el("btnaide"); if (b) b.textContent = libelleAide();
+  dessinerEtayage();
+  traduireDOM();
+}
+
+async function generaliser() {
+  const r = await api("/api/generalisation", {ident: ident, texte: el("gen").value});
+  if (r.refus) { el("msg").innerHTML = '<div class="note">' + r.refus + '</div>'; return; }
+  await rafraichir();
+}
+
+chargerTextes().then(() => {
+  verifierServeur();
+  ecranInscription();
+  traduireDOM();
+});
+</script>
+</body>
+</html>
