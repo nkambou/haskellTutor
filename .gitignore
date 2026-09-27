@@ -1,5 +1,5 @@
 __pycache__/
 *.py[cod]
-etat.json
-journal.jsonl
+etat*.json
+journal*.jsonl
 .DS_Store

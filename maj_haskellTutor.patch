@@ -1,0 +1,46 @@
+diff --git a/.gitignore b/.gitignore
+index 97f3a33..d85bb14 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,5 +1,5 @@
+ __pycache__/
+ *.py[cod]
+-etat.json
+-journal.jsonl
++etat*.json
++journal*.jsonl
+ .DS_Store
+diff --git a/noyau.py b/noyau.py
+index 7674f30..40e4ace 100644
+--- a/noyau.py
++++ b/noyau.py
+@@ -45,8 +45,11 @@ VERSION = "3.8"
+ 
+ ICI = os.path.dirname(os.path.abspath(__file__))
+ REFERENTIEL = os.path.join(ICI, "referentiel.json")
+-ETAT = os.path.join(ICI, "etat.json")
+-JOURNAL = os.path.join(ICI, "journal.jsonl")
++# Un fichier d'etat et un journal par langage, pour que deux tuteurs puissent
++# tourner cote a cote depuis le meme dossier. Haskell garde les noms d'origine.
++_SUFFIXE = "" if LANGUE.name == "haskell" else "_" + LANGUE.name
++ETAT = os.path.join(ICI, "etat%s.json" % _SUFFIXE)
++JOURNAL = os.path.join(ICI, "journal%s.jsonl" % _SUFFIXE)
+ 
+ # ============================================================ activites
+ 
+diff --git a/referentiel.json b/referentiel.json
+index d5d4152..4471b59 100644
+--- a/referentiel.json
++++ b/referentiel.json
+@@ -437,6 +437,11 @@
+           "type": "[[a]] -> [a]",
+           "neutre": "[]",
+           "operation": "++"
++        },
++        {
++          "type": "[Bool] -> Bool",
++          "neutre": "True",
++          "operation": "&&"
+         }
+       ],
+       "solution_de_reference": "f [] = Z ; f (x:xs) = OP x (f xs)",

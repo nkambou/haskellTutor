@@ -45,8 +45,11 @@ VERSION = "3.8"
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 REFERENTIEL = os.path.join(ICI, "referentiel.json")
-ETAT = os.path.join(ICI, "etat.json")
-JOURNAL = os.path.join(ICI, "journal.jsonl")
+# Un fichier d'etat et un journal par langage, pour que deux tuteurs puissent
+# tourner cote a cote depuis le meme dossier. Haskell garde les noms d'origine.
+_SUFFIXE = "" if LANGUE.name == "haskell" else "_" + LANGUE.name
+ETAT = os.path.join(ICI, "etat%s.json" % _SUFFIXE)
+JOURNAL = os.path.join(ICI, "journal%s.jsonl" % _SUFFIXE)
 
 # ============================================================ activites
 
