@@ -15,7 +15,7 @@ FORMES = {"constructeurs": "constructors", "comprehension": "comprehension",
           "iteratif": "iterative", "sans-recursion": "no-recursion",
           "non-analysable": "unanalysable", "sans-motif": "no-pattern"}
 
-CATEGORIES = {"resultat-faux": "wrong-result", "appel-mauvaise-valeur": "wrong-call",
+CATEGORIES = {"resultat-faux": "wrong-result", "appel-mauvaise-valeur": "missing-base-case",
               "cas-de-base-oublie": "missing-base-case",
               "types-incompatibles": "incompatible-types", "nom-inconnu": "unknown-name",
               "syntaxe": "syntax", "non-classee": "unclassified"}

@@ -376,4 +376,17 @@ name = nom
 command = commande
 test_template = gabarit_test
 analyse = analyser
-categorise = categoriser
+
+# Les categories d'etayage dans le vocabulaire commun du cadre. Une recursion
+# infinie vient le plus souvent d'un cas de base absent lorsque le pas n'indexe
+# pas la liste (return 1 + longueur(xs[1:])) : elle rejoint cette categorie.
+CATEGORIES_COMMUNES = {
+    "resultat-faux": "wrong-result", "cas-de-base-oublie": "missing-base-case",
+    "appel-mauvaise-valeur": "missing-base-case",
+    "types-incompatibles": "incompatible-types", "nom-inconnu": "unknown-name",
+    "syntaxe": "syntax", "non-classee": "unclassified"}
+
+
+def categorise(message, compile_mais_faux=False):
+    c = categoriser(message, compile_mais_faux=compile_mais_faux)
+    return CATEGORIES_COMMUNES.get(c, c)

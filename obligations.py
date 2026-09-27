@@ -2,7 +2,7 @@
 
 Une famille d'activites porte des « obligations » : des ancrages sans lesquels la
 generalisation visee n'est pas atteignable. Dans HaskellTutor elles ont ete trouvees
-a la main, en redigeant les chapitres. Ce module les trouve mecaniquement.
+a la main, en concevant les familles. Ce module les trouve mecaniquement.
 
 Le principe est une analyse d'ablation sur le corpus de reference. On aligne la
 famille complete et on note le nombre de points de variation. Puis, pour chaque
@@ -50,11 +50,13 @@ def rapport(nom_famille, corpus, attendu=None, granularite="fins"):
               % (nom_famille, len(corpus), r["complet"],
                  "" if attendu is None else " (attendu %d)" % attendu),
               "  forme complete : %s" % r["forme"], ""]
-    lignes.append("  %-14s %-10s %-8s %s" % ("ancrage", "sans lui", "ecart", "verdict"))
+    lignes.append("  %-14s %-10s %-8s %-16s %s"
+                  % ("ancrage", "sans lui", "ecart", "verdict", "forme sans lui"))
     for a in r["ancrages"]:
-        lignes.append("  %-14s %-10d %-+8d %s"
+        lignes.append("  %-14s %-10d %-+8d %-16s %s"
                       % (a["ancrage"], a["sans_lui"], a["ecart"],
-                         "PORTEUR" if a["porteur"] else "interchangeable"))
+                         "PORTEUR" if a["porteur"] else "interchangeable",
+                         a["forme_sans_lui"]))
     lignes.append("")
     if r["obligatoires"]:
         lignes.append("  obligation induite : servir %s"
@@ -73,7 +75,7 @@ if __name__ == "__main__":
     print("=" * 78)
     print()
     cas = [("F-fold", "fins", 3), ("F-map", "fins", 1),
-           ("F-filter", "fins", 1), ("F-tree", "blocs", 2),
+           ("F-filter", "fins", 1), ("F-tree", "blocs", 2), ("F-tree", "fins", None),
            ("F-failure", "fins", 1)]
     for nom, gran, attendu in cas:
         corpus, _ = G.REFERENCES[nom]
