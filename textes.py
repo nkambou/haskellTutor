@@ -24,6 +24,79 @@ import re
 # et n'est alors substituee qu'en mot entier.
 
 CATALOGUE = {
+ 'transforme en rapport « ce que le tuteur observe ». Une erreur classée': 'turns into the report “what the tutor observes”. An error classified as',
+ ', qui en tire le rapport « ce que le tuteur observe ». ': ', which derives from it the report “what the tutor observes”. ',
+ 'Les étayages pris y figurent sous la catégorie': 'Scaffolding taken appears there under the category',
+ "engendre le rapport complet de l'unité 4, messages GHC compris.": 'generates the complete report for unit 4, GHC messages included.',
+ "reprendre comme ancrages les trois fonctions malhonnetes rencontrees dans les unites precedentes, pour que la remontee solde des dettes reelles de l'apprenant": 'take as anchors the three dishonest functions met in earlier units, so that the abstraction settles real debts of the learner',
+ # --- console enseignante : autres onglets
+ 'Aucun groupe formé.': 'No group formed.',
+ "Un groupe en attente ne donne pas accès à l'atelier de consolidation tant qu'il n'est pas validé.": 'A pending group gives no access to the consolidation workshop until it is approved.',
+ 'Tout le monde est affecté.': 'Everyone is assigned.',
+ "Cette liste ne va qu'à vous : aucun apprenant ne voit qui n'a été invité par personne.": 'This list is for you only: no learner sees who has not been invited by anyone.',
+ "Aucun apprenant au plafond d'instances.": 'No learner at the instance ceiling.',
+ 'Activités exécutables': 'Executable activities',
+ ' famille(s) sans activités exécutables': ' family(ies) without executable activities',
+ ". Elles sont spécifiées dans le référentiel mais aucun ancrage n'a encore été écrit. Pour en ajouter un, une seule chose est à écrire dans le dictionnaire ACTIVITES de noyau.py : un identifiant, un énoncé, une signature, une amorce, et la liste des tests sous forme de couples (expression, résultat attendu).": '. They are specified in the referential but no anchor has been written yet. To add one, a single entry is written in the ACTIVITES dictionary of noyau.py: an identifier, a statement, a signature, a stub, and the list of tests as pairs (expression, expected result).',
+ 'Formation des groupes': 'Group formation',
+ 'autorisé par': 'allowed by',
+ 'mode de formation': 'formation mode',
+ "fenêtre d'auto-organisation (h)": 'self-organisation window (h)',
+ "L'auto-organisation ne s'exerce que dans l'ensemble éligible : seuls les pairs au même état sur le concept visé sont proposés à l'apprenant.": 'Self-organisation only operates within the eligible set: only peers in the same state on the target concept are offered to the learner.',
+ "L'auto-organisation ne s'exerce que dans l'ensemble eligible : seuls les pairs au meme etat sur le concept vise sont proposes.": 'Self-organisation only operates within the eligible set: only peers in the same state on the target concept are offered.',
+ 'Ces réglages se modifient dans': 'These settings are changed in',
+ ', qui est le seul fichier de configuration du cours.': ", which is the course's only configuration file.",
+ 'Relevés par chapitre': 'Records by chapter',
+ "Aucune soumission enregistrée pour l'instant.": 'No submission recorded yet.',
+ 'Ces relevés sont ceux que': 'These records are the ones that',
+ 'est une erreur que le compilateur ne signale pas : le code compile et calcule faux. Une catégorie inconnue signale une erreur nouvelle, à ajouter au catalogue de': 'is an error the compiler does not report: the code compiles and computes the wrong result. An unknown category signals a new error, to be added to the catalogue of',
+ 'En ligne de commande :': 'From the command line:',
+ 'Journal des soumissions': 'Submission log',
+ 'Le journal est écrit dans': 'The log is written to',
+ ', au format attendu par': ', in the format expected by',
+ ' soumissions': ' submissions',
+ "Un relevé nom-note : ne gardez que les reçus, ceux qui ont au moins 60.":
+   "A name-and-mark record: keep only those who passed, with at least 60.",
+ " ; trop peu d'activites servies : ": "; too few served activities: ",
+ # typographie : l'espace avant le deux-points ne se garde pas en anglais
+ " : ": ": ",
+ " ; ": "; ",
+ " : l'apprenant ne pourra pas quitter la séance avant d'avoir acquis le concept. À réserver aux séances encadrées.": ': the learner may not leave the session before acquiring the concept, and this should be reserved for supervised sessions.',
+ 'console enseignante': 'teacher console',
+ 'sans remontée': 'no abstraction',
+ 'sans alignement': 'no alignment',
+ 'invariant verifie': 'verified invariant',
+ # --- console enseignante : familles et contrats
+ "Familles d'activités": 'Activity families',
+ "Le contrôle aligne les solutions de référence de chaque famille et compare le résultat à ce que le référentiel annonce. Une famille non conforme n'est pas servie : elle produirait un plateau.": "The check aligns each family's reference solutions and compares the result with what the referential declares. A non-conforming family is not served: it would produce a plateau.",
+ 'au moins un ancrage a deux niveaux, sans quoi le motif compose reste invisible': 'at least one two-level anchor, without which the composed pattern stays invisible',
+ "au moins un ancrage ou ce n'est pas une liste qui decroit (repete)": 'at least one anchor where what decreases is not a list (repete)',
+ "servir en reemploi un cas ou l'argument n'est pas en derniere position (div x 2), pour que la condition soit eprouvee et non seulement enoncee": 'serve as a reuse item a case where the argument is not in final position (div x 2), so that the condition is tested and not merely stated',
+ 'au moins un ancrage a constructeurs sans champ, pour que le type enumere soit rencontre': 'at least one anchor with fieldless constructors, so that the enumerated type is met',
+ "au moins un ancrage dont l'operation ne combine pas les deux appels par la meme structure (hauteurA) ; sans lui la generalisation obtenue est trop etroite": 'at least one anchor whose step does not combine the two recursive calls with the same structure (hauteurA); without it the generalisation obtained is too narrow',
+ "au moins un ancrage sur un type parametre, pour faire apparaitre la contrainte d'instance": 'at least one anchor on a parameterised type, to bring out the instance constraint',
+ "servir en reemploi une instance fautive (Paire qui echange ses champs), pour eprouver les deux regles qu'aucun compilateur ne verifie": 'serve as a reuse item a faulty instance (Paire swapping its fields), to test the two laws that no compiler checks',
+ 'au moins un ancrage a trois etapes : a deux niveaux, la branche Nothing -> Nothing ne se percoit pas encore comme du bruit': 'at least one three-step anchor: at two levels the repeated Nothing -> Nothing branch is not yet perceived as noise',
+ "le coeur pur doit etre appelable depuis GHCi sans entree-sortie ; l'activite le verifie": 'the pure core must be callable from GHCi without input or output; the activity checks it',
+ "au moins un ancrage a definition circulaire (fibs) : c'est le seul qui montre ce que la paresse permet et non seulement ce qu'elle evite": 'at least one anchor with a circular definition (fibs): it is the only one that shows what laziness permits and not merely what it avoids',
+ "l'ancrage de mesure est obligatoire : la difference ne se voit pas sans +RTS -s": 'the measurement anchor is mandatory: the difference is invisible without +RTS -s',
+ ": le concept sera présenté avant d'avoir été produit, et l'indicateur de réemploi y perdra sa valeur diagnostique. Le réglage est conservé : la console signale, elle n'interdit pas.": ': the concept will be presented before it has been produced, and the reuse indicator will lose its diagnostic value there. The setting is kept: the console warns, it does not forbid.',
+ 'auto_avec_accord': 'self-organisation with approval',
+ 'groupes de 2 à 3': 'groups of 2 to 3',
+ 'groupes de 2 à 4': 'groups of 2 to 4',
+ 'groupes de 2 à 5': 'groups of 2 to 5',
+ 'groupes de 3 à 4': 'groups of 3 to 4',
+ 'groupes de 3 à 5': 'groups of 3 to 5',
+ 'groupes de 3 à 6': 'groups of 3 to 6',
+ "Étayage, niveau 1 sur 3": "Scaffolding, level 1 of 3",
+ "Étayage, niveau 2 sur 3": "Scaffolding, level 2 of 3",
+ "Étayage, niveau 3 sur 3": "Scaffolding, level 3 of 3",
+ # --- libelles d'interface verifies sur les captures de l'article
+ "soumission(s) enregistrée(s).": "submission(s) recorded.",
+ "Aucune solution enregistrée pour ce concept.": "No solution recorded for this concept yet.",
+ "parcours vers la programmation fonctionnelle": "a pathway to functional programming",
+ "points mais instable": "variation point(s), not yet stable",
+ "Voici les fonctions que ": "These are the functions ",
  # --- messages du tuteur, reussite
  "Bien vu.": "Well spotted.",
  "solution au dossier ; le tuteur en attend au moins":
@@ -516,9 +589,9 @@ CATALOGUE = {
  "La votre est correcte mais elle ne distingue pas les cas : on n'y voit ni ce que vaut le resultat sur une liste vide, ni ce que vous faites du premier element.":
    "Yours is correct, but it does not distinguish the cases: it shows neither what the result is on an empty list nor what you do with the first element.",
 
- " sur 3 au minimum.": " of 3 at least.",
- " sur 4 au minimum.": " of 4 at least.",
- " sur 5 au minimum.": " of 5 at least.",
+ " sur 3 au minimum.": " (at least 3 required).",
+ " sur 4 au minimum.": " (at least 4 required).",
+ " sur 5 au minimum.": " (at least 5 required).",
  "(0 sur 3)": "(0 of 3)", "(1 sur 3)": "(1 of 3)", "(2 sur 3)": "(2 of 3)",
  "(3 sur 3)": "(3 of 3)", "(0 sur 4)": "(0 of 4)", "(1 sur 4)": "(1 of 4)",
  "(2 sur 4)": "(2 of 4)", "(3 sur 4)": "(3 of 4)",
@@ -930,7 +1003,22 @@ ETIQUETTES = {
  "generalise": "generalised", "instances": "instances",
  "solo": "solo", "libre": "free", "oui": "yes", "non": "no",
  "toujours": "always", "jamais": "never",
+ "aide-niveau-1": "scaffolding-level-1",
+ "aide-niveau-2": "scaffolding-level-2", "aide-niveau-3": "scaffolding-level-3", "réussi": "passed",
+ "Inscription": "Registration", "Régime": "Regime", "Parcours": "Pathway",
  
+}
+
+# Libelles courts qui ne se traduisent que lorsqu'ils forment a eux seuls tout le
+# texte d'un element (un en-tete de colonne, un mot en gras ou en italique). Dans
+# une phrase francaise non traduite, ils restent en francais : mieux vaut une
+# phrase entierement francaise qu'une phrase melangee.
+LIBELLES = {
+ 'défaut': 'default', 'Sans groupe': 'No group', 'énoncé': 'statement', 'catégorie': 'category',
+ "vous": "you", "vide": "empty", "famille": "family", "ancrages": "anchors",
+ "obtenu": "obtained", "attendu": "expected", "corps": "bodies", "conforme": "conforming",
+ "si doute": "on-doubt", "expliquer_et_reecrire": "explain_and_rewrite",
+ "expliquer_et_poursuivre": "explain_and_continue", "confronter": "confront",
 }
 
 _ENTREES = None
@@ -947,6 +1035,8 @@ def traduire_texte(s, langue="en"):
     """Substitution en une passe : les portions deja traduites sont figees."""
     if langue == "fr" or not isinstance(s, str) or not s:
         return s
+    if s.strip() in LIBELLES:
+        return s.replace(s.strip(), LIBELLES[s.strip()])
     morceaux = [(s, False)]                      # (texte, deja traduit)
     for fr, en in _entrees():
         suivants = []
@@ -961,11 +1051,16 @@ def traduire_texte(s, langue="en"):
                 if p:
                     suivants.append((p, False))
         morceaux = suivants
-    sortie = "".join(t for t, _ in morceaux)
-    for fr, en in ETIQUETTES.items():
-        if fr != en:
-            sortie = re.sub(r"(?<![\w-])%s(?![\w-])" % re.escape(fr), en, sortie)
-    return sortie
+    # Les etiquettes ne s'appliquent qu'aux portions non encore traduites : une
+    # phrase deja rendue en anglais n'est pas reexaminee mot a mot.
+    sortie = []
+    for texte, fige in morceaux:
+        if not fige:
+            for fr, en in ETIQUETTES.items():
+                if fr != en:
+                    texte = re.sub(r"(?<![\w-])%s(?![\w-])" % re.escape(fr), en, texte)
+        sortie.append(texte)
+    return "".join(sortie)
 
 
 def traduire(obj, langue="en"):
@@ -983,4 +1078,4 @@ def traduire(obj, langue="en"):
 
 def catalogue_json():
     """Le catalogue, pour que les clients traduisent leurs propres libelles."""
-    return {"phrases": CATALOGUE, "etiquettes": ETIQUETTES}
+    return {"phrases": CATALOGUE, "etiquettes": ETIQUETTES, "libelles": LIBELLES}

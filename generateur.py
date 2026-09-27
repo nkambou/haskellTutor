@@ -229,12 +229,15 @@ FORMES_ATTENDUES.update({
     "F-filter-bis": ("structurel-garde", "structurel-droit"),
 })
 
+SOLUTIONS.setdefault("voyelles",
+    "voyelles [] = []\nvoyelles (c:cs)\n  | c `elem` \"aeiou\" = c : voyelles cs\n  | otherwise = voyelles cs")
+
 # ---- solutions de reference des seize familles, pour le controle au chargement
 REFERENCES = {
  "F-map": ([("doubler", SOLUTIONS["doubler"]), ("initiales", SOLUTIONS["initiales"]),
                        ("notes", SOLUTIONS["notes"]), ("majuscules", SOLUTIONS["majuscules"])], []),
  "F-filter": ([("pairs", SOLUTIONS["pairs"]), ("nonVides", SOLUTIONS["nonVides"]),
-                  ("admis", SOLUTIONS["admis"])], []),
+                  ("admis", SOLUTIONS["admis"]), ("voyelles", SOLUTIONS["voyelles"])], []),
  "F-fold": ([("somme", SOLUTIONS["somme"]), ("produit", SOLUTIONS["produit"]),
             ("longueur", SOLUTIONS["longueur"]), ("aplatir", SOLUTIONS["aplatir"]),
             ("toutVrai", SOLUTIONS["toutVrai"])], []),

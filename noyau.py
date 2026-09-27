@@ -99,9 +99,10 @@ ACTIVITES = {
    "nonVides :: [String] -> [String]",
    "nonVides :: [String] -> [String]\nnonVides = undefined\n",
    [("nonVides [\"a\",\"\",\"b\"]", "[\"a\",\"b\"]"), ("nonVides []", "[]")]),
-  ("admis", "Des notes sur cent : ne gardez que les reçues.", "admis :: [Int] -> [Int]",
-   "admis :: [Int] -> [Int]\nadmis = undefined\n",
-   [("admis [55,60,72,41]", "[60,72]"), ("admis []", "[]")]),
+  ("admis", "Un relevé nom-note : ne gardez que les reçus, ceux qui ont au moins 60.",
+   "admis :: [(String,Int)] -> [(String,Int)]",
+   "admis :: [(String,Int)] -> [(String,Int)]\nadmis = undefined\n",
+   [('admis [("Ada",72),("Bob",55),("Cy",60)]', '[("Ada",72),("Cy",60)]'), ("admis []", "[]")]),
   ("voyelles", "Un texte : ne gardez que les voyelles.", "voyelles :: String -> String",
    "voyelles :: String -> String\nvoyelles = undefined\n",
    [("voyelles \"haskell\"", "\"ae\""), ("voyelles \"\"", "\"\"")]),
@@ -550,6 +551,15 @@ def etat_alignement(corpus):
     varie = len({b for b in bases if b is not None}) > 1
     return len(vus) + (1 if varie else 0), R.rendre(g), (1 if varie else 0) + (1 if vus else 0)
 
+def compte_alignement(ref, famille, corpus):
+    """Le compte que la politique compare a la cible : points fins, ou blocs si la
+    famille le declare. Le compte fin depend de l'ordre et de la composition du
+    corpus lorsque les parties qui varient ont la meme forme (des predicats qui sont
+    tous des comparaisons, par exemple) ; le compte par blocs n'en depend pas."""
+    nb, forme, blocs = etat_alignement(corpus)
+    v = ref.get("familles", {}).get(famille, {}).get("validation", {})
+    return (blocs if v.get("granularite") == "blocs" else nb), forme, blocs
+
 # ============================================================ politique
 
 def decider(ref, ap, cid):
@@ -571,9 +581,20 @@ def decider(ref, ap, cid):
     if n < r["instances_min"]:
         return "instance", "corpus insuffisant (%d sur %d)" % (n, r["instances_min"])
 
-    nb, forme, blocs = etat_alignement([(x["nom"], x["code"]) for x in corpus])
-    stable = ap["stabilite"].get(cid) == nb
-    ap["stabilite"][cid] = nb
+    nb, forme, blocs = compte_alignement(ref, c["famille"],
+                                         [(x["nom"], x["code"]) for x in corpus])
+    # La stabilite se juge d'une solution admise a la suivante. Une relecture de la
+    # vue ne constitue pas une nouvelle observation, et une revision d'une solution
+    # existante ne confirme pas le compte. Le corpus est memorise sous forme de
+    # listes, pour rester comparable apres la relecture de l'etat JSON.
+    empreinte = [[x["nom"], x["code"]] for x in corpus]
+    precedent = ap["stabilite"].get(cid)
+    if isinstance(precedent, dict) and precedent.get("corpus") == empreinte:
+        stable = precedent.get("stable", False)
+    else:
+        stable = (isinstance(precedent, dict) and precedent.get("corpus") == empreinte[:-1]
+                  and precedent.get("points") == nb)
+    ap["stabilite"][cid] = {"corpus": empreinte, "points": nb, "stable": stable}
     if nb == attendu and stable:
         return "abstraction", "alignement stable a %d points de variation" % nb
     if n >= r["instances_max"]:
@@ -581,6 +602,11 @@ def decider(ref, ap, cid):
     if nb != attendu:
         return "instance", "alignement a %d point(s), le referentiel en attend %d" % (nb, attendu)
     return "instance", "alignement a %d points mais instable" % nb
+
+def est_stable(ap, cid):
+    """Etat de stabilite enregistre par decider pour ce concept."""
+    s = ap.get("stabilite", {}).get(cid)
+    return bool(isinstance(s, dict) and s.get("stable"))
 
 def prochaine_activite(famille, servis, pool="instances"):
     source = ACTIVITES if pool == "instances" else REEMPLOIS
@@ -598,13 +624,15 @@ def schema_employe(nom, code):
         return True
     return not (a["pas"] and "REC" in a["pas"])
 
-def alignement_affichable(corpus):
+def alignement_affichable(corpus, ref=None, famille=None):
     """Ce que l'atelier de remontee montre : les equations, ce qui est identique barre."""
     lignes = []
     for x in corpus:
         a = LANGUE.analyse(x["nom"], x["code"])
         lignes.append({"nom": x["nom"], "base": a["base"], "pas": a["pas"]})
-    nb, forme, blocs = etat_alignement([(x["nom"], x["code"]) for x in corpus])
+    paires = [(x["nom"], x["code"]) for x in corpus]
+    nb, forme, blocs = (compte_alignement(ref, famille, paires) if ref is not None
+                        else etat_alignement(paires))
     return {"lignes": lignes, "points": nb, "blocs": blocs, "forme": forme}
 
 # ============================================================ etat persistant
@@ -686,5 +714,11 @@ def etat_des_familles(ref):
             res["forme"] = forme
         else:
             res["verdict"] = "solutions de reference absentes"
+        # Une famille servie doit offrir au moins instances_min + 1 activites :
+        # le compte est calcule a instances_min solutions et confirme a la suivante.
+        servies = len(ACTIVITES.get(nom, []))
+        requis = ref["reglages"]["instances_min"] + 1
+        if servies and servies < requis:
+            res["verdict"] += " ; trop peu d'activites servies : %d (minimum %d)" % (servies, requis)
         out.append(res)
     return out

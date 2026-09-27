@@ -51,6 +51,67 @@ const ONGLETS = [["familles","Familles et validation"],["contrats","Contrats"],
                  ["reglages","Réglages"],["releves","Relevés"],["journal","Journal"]];
 let courant = "familles", D = {};
 
+const LANG = "en";
+let CAT = null;
+
+async function chargerTextes(){
+  if (LANG === "fr") { CAT = null; return; }
+  try {
+    CAT = await (await fetch("/api/textes")).json();
+    CAT.ordre = Object.keys(CAT.phrases).sort((a, b) => b.length - a.length);
+  } catch (e) { CAT = null; }
+}
+
+function tr(t){
+  if (!CAT || typeof t !== "string" || !t.trim()) return t;
+  const lib = (CAT.libelles || {})[t.trim()];
+  if (lib) return t.replace(t.trim(), lib);
+  let bouts = [[t, false]];
+  for (const fr of CAT.ordre) {
+    if (bouts.every(([x, f]) => f || x.indexOf(fr) < 0)) continue;
+    const en = CAT.phrases[fr], suite = [];
+    for (const [txt, fige] of bouts) {
+      if (fige || txt.indexOf(fr) < 0) { suite.push([txt, fige]); continue; }
+      const parts = txt.split(fr);
+      parts.forEach((pp, i) => { if (i) suite.push([en, true]); if (pp) suite.push([pp, false]); });
+    }
+    bouts = suite;
+  }
+  // les etiquettes ne s'appliquent qu'aux portions non encore traduites
+  return bouts.map(([x, fige]) => {
+    if (fige) return x;
+    for (const [fr, en] of Object.entries(CAT.etiquettes || {})) {
+      if (fr !== en) x = x.replace(new RegExp("(?<![\\w-])" + fr + "(?![\\w-])", "g"), en);
+    }
+    return x;
+  }).join("");
+}
+
+// La traduction s'applique aux noeuds de texte du document, apres chaque rendu.
+// Les balises de code sont laissees telles quelles : le code de l'apprenant et
+// la sortie du compilateur ne se traduisent pas.
+const SANS_TRADUCTION = new Set(["CODE", "PRE", "TEXTAREA", "SCRIPT", "STYLE"]);
+function traduireDOM(racine){
+  if (!CAT) return;
+  const p = document.createTreeWalker(racine || document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode(n){
+      let e = n.parentElement;
+      while (e) { if (SANS_TRADUCTION.has(e.tagName)) return NodeFilter.FILTER_REJECT;
+                  e = e.parentElement; }
+      return n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }});
+  const cibles = [];
+  while (p.nextNode()) cibles.push(p.currentNode);
+  for (const n of cibles) { const v = tr(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+  document.querySelectorAll("[placeholder]").forEach(x =>
+    x.setAttribute("placeholder", tr(x.getAttribute("placeholder"))));
+  document.querySelectorAll("button, option").forEach(x => {
+    if (!x.children.length) { const v = tr(x.textContent); if (v !== x.textContent) x.textContent = v; }
+  });
+}
+
+
+
 const VERSION_ATTENDUE = "3.8";
 
 function alerteServeur(msg) {
@@ -107,7 +168,7 @@ function onglets() {
     '<a class="' + (k === courant ? "actif" : "") + '" onclick="aller(\'' + k + '\')">' +
     t + '</a>').join("");
 }
-async function aller(k){ courant = k; onglets(); await VUES[k](); }
+async function aller(k){ courant = k; onglets(); await VUES[k](); traduireDOM(); }
 
 // ------------------------------------------------------------------ familles
 
@@ -373,8 +434,8 @@ async function vueJournal() {
      (e.categorie || "—") + '</td><td>' + (e.silencieuse ? "oui" : "") + '</td><td>' +
      (e.hors_delai ? '<span class="ko">oui</span>' : "") + '</td></tr>').join("") +
    '</table><div class="note">Le journal est écrit dans <code>journal.jsonl</code>, au format ' +
-   'attendu par <code>releves.py</code>, qui en tire la rubrique « ce que le tuteur observe » ' +
-   'du manuel. Les étayages pris y figurent sous la catégorie <code>aide-niveau-n</code>.' +
+   'attendu par <code>releves.py</code>, qui en tire le rapport « ce que le tuteur observe ». ' +
+   'Les étayages pris y figurent sous la catégorie <code>aide-niveau-n</code>.' +
    '</div></div></div>';
 }
 
@@ -396,19 +457,24 @@ async function vueReleves() {
       '</table></div>').join("") :
     '<div class="note">Aucune soumission enregistrée pour l\'instant.</div>') +
    '<div class="note">Ces relevés sont ceux que <code>releves.py</code> transforme en ' +
-   'rubrique « ce que le tuteur observe » pour le manuel. Une erreur classée ' +
+   'rapport « ce que le tuteur observe ». Une erreur classée ' +
    '<i>silencieuse</i> est une erreur que le compilateur ne signale pas : le code ' +
    'compile et calcule faux. Une catégorie inconnue signale une erreur nouvelle, ' +
    'à ajouter au catalogue de <code>releves.py</code>.</div>' +
    '<div class="note">En ligne de commande : <code>python3 releves.py journal.jsonl 4</code> ' +
-   'engendre la rubrique complète du chapitre 4, messages GHC compris.</div>' +
+   'engendre le rapport complet de l\'unité 4, messages GHC compris.</div>' +
    '</div></div>';
 }
 
 const VUES = {familles: vueFamilles, releves: vueReleves, contrats: vueContrats, groupes: vueGroupes,
               cohorte: vueCohorte, activites: vueActivites, reglages: vueReglages,
               journal: vueJournal};
-onglets(); verifierServeur(); vueFamilles();
+for (const k of Object.keys(VUES)) {
+  const f = VUES[k]; VUES[k] = async () => { await f(); traduireDOM(); };
+}
+const _vueContrats = vueContrats;
+vueContrats = async () => { await _vueContrats(); traduireDOM(); };
+chargerTextes().then(async () => { onglets(); verifierServeur(); await VUES.familles(); });
 </script>
 </body>
 </html>

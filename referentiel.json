@@ -392,13 +392,17 @@
         {
           "type": "[(String,Int)] -> [(String,Int)]",
           "predicat": "sur une composante"
+        },
+        {
+          "type": "String -> String",
+          "predicat": "appartenance à un ensemble"
         }
       ],
       "solution_de_reference": "f [] = [] ; f (x:xs) | P x = x : f xs | otherwise = f xs",
       "chapitre": 4,
       "validation": {
         "mode": "corps",
-        "granularite": "fins",
+        "granularite": "blocs",
         "attendu": 1
       }
     },
@@ -807,7 +811,7 @@
         }
       ],
       "solution_de_reference": "f ... = Nothing | Just ...",
-      "obligation": "reprendre comme ancrages les trois fonctions malhonnetes des chapitres 2, 3 et 6, pour que la remontee solde des dettes reelles de l'apprenant",
+      "obligation": "reprendre comme ancrages les trois fonctions malhonnetes rencontrees dans les unites precedentes, pour que la remontee solde des dettes reelles de l'apprenant",
       "validation": {
         "mode": "corps",
         "granularite": "fins",

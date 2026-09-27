@@ -25,7 +25,16 @@ def lire(source):
 
 # ---------------------------------------------------------------- 2. syntax
 
-TOK = re.compile(r"\(|\)|\[\]|&&|\|\||==|/=|<=|>=|\+\+|[A-Za-z_][A-Za-z0-9_']*|\d+|[+*/:<>-]")
+# Litteraux de chaine et de caractere, et operateurs entre accents graves, forment
+# chacun un seul jeton. Tout autre caractere visible devient un jeton a lui seul :
+# aucun caractere n'est ignore en silence, sans quoi deux formes differentes
+# pourraient s'aligner comme si elles etaient identiques, ou l'inverse.
+TOK = re.compile(r'"(?:[^"\\]|\\.)*"'
+                 r"|'(?:[^'\\]|\\.)'"
+                 r"|`[A-Za-z_][A-Za-z0-9_']*`"
+                 r"|\(|\)|\[\]|&&|\|\||==|/=|<=|>=|\+\+"
+                 r"|[A-Za-z_][A-Za-z0-9_']*|\d+|[+*/:<>-]"
+                 r"|\S")
 INFIXES = ["&&", "||", "==", "/=", "<=", ">=", "++", ":", "+", "-", "*", "/", "<", ">"]
 
 def tokens(s):
@@ -38,10 +47,19 @@ def parse(ts):
         if ts[i] == "(":
             noeud, j = expr(i + 1)
             return noeud, j + 1
+        if ts[i] == "[":
+            # liste en extension : [a] ou [a, b] devient (LIST a b)
+            elements, j = [], i + 1
+            while j < len(ts) and ts[j] != "]":
+                e, j = expr(j)
+                elements.append(e)
+                if j < len(ts) and ts[j] == ",":
+                    j += 1
+            return ("app", "LIST") + tuple(elements) if elements else ("var", "[]"), j + 1
         t = ts[i]
         i += 1
         args = []
-        while i < len(ts) and ts[i] not in INFIXES + [")"]:
+        while i < len(ts) and ts[i] not in INFIXES + [")", "]", ","]:
             a, i = atome(i)
             args.append(a)
         return (("app", t) + tuple(args) if args else ("var", t)), i

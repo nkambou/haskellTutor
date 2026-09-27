@@ -1,0 +1,103 @@
+"""Ancrages executables pour l'instanciation Python de FPTutor-Shell.
+
+Chaque ancrage : identifiant, enonce, signature, amorce, tests (expression, attendu).
+Les enonces evitent tout terme qui nommerait le schema vise.
+"""
+
+ACTIVITES = {
+ "F-map": [
+  ("doubler", "Des quantites a convertir : multipliez chaque element par deux.",
+   "doubler(xs) -> list",
+   "def doubler(xs):\n    ...\n",
+   [("doubler([1, 2, 3])", "[2, 4, 6]"), ("doubler([])", "[]")]),
+  ("majuscules", "Des noms saisis en minuscules : mettez chaque chaine en majuscules.",
+   "majuscules(xs) -> list",
+   "def majuscules(xs):\n    ...\n",
+   [('majuscules(["ada", "curie"])', "['ADA', 'CURIE']"), ("majuscules([])", "[]")]),
+  ("initiales", "Une liste de prenoms : donnez la premiere lettre de chacun.",
+   "initiales(xs) -> list",
+   "def initiales(xs):\n    ...\n",
+   [('initiales(["Ada", "Curie"])', "['A', 'C']"), ("initiales([])", "[]")]),
+  ("carres", "Des mesures a mettre au carre.",
+   "carres(xs) -> list",
+   "def carres(xs):\n    ...\n",
+   [("carres([1, 2, 3])", "[1, 4, 9]"), ("carres([])", "[]")]),
+  ("notes", "Un releve de couples (nom, note) : ne gardez que les notes.",
+   "notes(xs) -> list",
+   "def notes(xs):\n    ...\n",
+   [('notes([("a", 3), ("b", 5)])', "[3, 5]"), ("notes([])", "[]")]),
+ ],
+
+ "F-filter": [
+  ("pairs", "Des numeros de place : ne gardez que les pairs.",
+   "pairs(xs) -> list",
+   "def pairs(xs):\n    ...\n",
+   [("pairs([1, 2, 3, 4])", "[2, 4]"), ("pairs([])", "[]")]),
+  ("non_vides", "Des champs de formulaire : ecartez ceux laisses vides.",
+   "non_vides(xs) -> list",
+   "def non_vides(xs):\n    ...\n",
+   [('non_vides(["a", "", "b"])', "['a', 'b']"), ("non_vides([])", "[]")]),
+  ("admis", "Un relevé nom-note : ne gardez que les reçus, ceux qui ont au moins 60.",
+   "admis(xs) -> list",
+   "def admis(xs):\n    ...\n",
+   [('admis([("Ada", 72), ("Bob", 55), ("Cy", 60)])', "[('Ada', 72), ('Cy', 60)]"), ("admis([])", "[]")]),
+  ("longs", "Des mots : ne gardez que ceux de plus de trois lettres.",
+   "longs(xs) -> list",
+   "def longs(xs):\n    ...\n",
+   [('longs(["le", "chat", "a", "dormi"])', "['chat', 'dormi']"), ("longs([])", "[]")]),
+ ],
+
+ "F-fold": [
+  ("somme", "Des releves de temperature : donnez le total.",
+   "somme(xs) -> int",
+   "def somme(xs):\n    ...\n",
+   [("somme([3, 4, 5, 6])", "18"), ("somme([])", "0")]),
+  ("produit", "Un facteur d'echelle par etage : donnez le facteur global.",
+   "produit(xs) -> int",
+   "def produit(xs):\n    ...\n",
+   [("produit([1, 2, 3, 4])", "24"), ("produit([])", "1")]),
+  ("longueur", "Un inventaire dont les elements importent peu : comptez-les.",
+   "longueur(xs) -> int",
+   "def longueur(xs):\n    ...\n",
+   [("longueur([1, 2, 3])", "3"), ("longueur([])", "0"),
+    ('longueur(["a", "b"])', "2")]),
+  ("aplatir", "Des paragraphes decoupes en listes de mots : remettez-les bout a bout.",
+   "aplatir(xss) -> list",
+   "def aplatir(xss):\n    ...\n",
+   [('aplatir([["le", "chat"], ["dort"]])', "['le', 'chat', 'dort']"),
+    ("aplatir([])", "[]")]),
+  ("concat_mots", "Des morceaux de texte : recollez-les en une seule chaine.",
+   "concat_mots(xs) -> str",
+   "def concat_mots(xs):\n    ...\n",
+   [('concat_mots(["le", "chat"])', "'lechat'"), ("concat_mots([])", "''")]),
+ ],
+}
+
+REEMPLOIS = {
+ "F-map": [
+  ("negatifs", "Changez le signe de chaque element.", "negatifs(xs) -> list",
+   "def negatifs(xs):\n    ...\n",
+   [("negatifs([1, -2, 3])", "[-1, 2, -3]"), ("negatifs([])", "[]")]),
+  ("longueurs", "Donnez la longueur de chaque chaine.", "longueurs(xs) -> list",
+   "def longueurs(xs):\n    ...\n",
+   [('longueurs(["ada", "curie"])', "[3, 5]"), ("longueurs([])", "[]")]),
+ ],
+ "F-filter": [
+  ("positifs", "Ne gardez que les nombres strictement positifs.", "positifs(xs) -> list",
+   "def positifs(xs):\n    ...\n",
+   [("positifs([-2, 3, 0, 5])", "[3, 5]"), ("positifs([])", "[]")]),
+  ("voyelles", "Ne gardez que les voyelles d'un texte.", "voyelles(s) -> list",
+   "def voyelles(s):\n    ...\n",
+   [('voyelles("haskell")', "['a', 'e']"), ('voyelles("")', "[]")]),
+ ],
+ "F-fold": [
+  ("maximum_l", "Le plus grand element d'une liste non vide.", "maximum_l(xs) -> int",
+   "def maximum_l(xs):\n    ...\n",
+   [("maximum_l([3, 9, 2])", "9"), ("maximum_l([7])", "7")]),
+  ("tout_vrai", "Plusieurs verifications : toutes ont-elles reussi ?",
+   "tout_vrai(xs) -> bool",
+   "def tout_vrai(xs):\n    ...\n",
+   [("tout_vrai([True, True])", "True"), ("tout_vrai([True, False])", "False"),
+    ("tout_vrai([])", "True")]),
+ ],
+}

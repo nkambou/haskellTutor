@@ -108,6 +108,8 @@ async function chargerTextes(){
 
 function tr(t){
   if (!CAT || typeof t !== "string" || !t.trim()) return t;
+  const lib = (CAT.libelles || {})[t.trim()];
+  if (lib) return t.replace(t.trim(), lib);
   let bouts = [[t, false]];
   for (const fr of CAT.ordre) {
     if (bouts.every(([x, f]) => f || x.indexOf(fr) < 0)) continue;
@@ -119,11 +121,14 @@ function tr(t){
     }
     bouts = suite;
   }
-  let out = bouts.map(([x]) => x).join("");
-  for (const [fr, en] of Object.entries(CAT.etiquettes || {})) {
-    if (fr !== en) out = out.replace(new RegExp("(?<![\\w-])" + fr + "(?![\\w-])", "g"), en);
-  }
-  return out;
+  // les etiquettes ne s'appliquent qu'aux portions non encore traduites
+  return bouts.map(([x, fige]) => {
+    if (fige) return x;
+    for (const [fr, en] of Object.entries(CAT.etiquettes || {})) {
+      if (fr !== en) x = x.replace(new RegExp("(?<![\\w-])" + fr + "(?![\\w-])", "g"), en);
+    }
+    return x;
+  }).join("");
 }
 
 // La traduction s'applique aux noeuds de texte du document, apres chaque rendu.
